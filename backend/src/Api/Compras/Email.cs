@@ -93,5 +93,38 @@ public sealed class PurchaseEmails(IEmailSender sender, IOptions<SiteOptions> si
         return sender.SendAsync(new EmailMessage(order.Email, subject, html, text), cancellationToken);
     }
 
+    /// <summary>Un solo email con el Enlace de compra nuevo de cada Compra.</summary>
+    public Task SendRecoveryAsync(string email, IReadOnlyList<(string ProductName, string Token)> links, CancellationToken cancellationToken)
+    {
+        var subject = links.Count == 1 ? "Tu enlace de compra" : "Tus enlaces de compra";
+        var text =
+            "Pediste recuperar el acceso a tus compras. Estos son tus enlaces:\n\n"
+            + string.Join("\n\n", links.Select(l => $"{l.ProductName}\n{PurchaseUrl(l.Token)}"))
+            + "\n\nLos enlaces anteriores siguen funcionando. No los compartas, porque cualquiera que los tenga puede descargar tus plantillas."
+            + "\n\nSi no fuiste tú, puedes ignorar este email.";
+        var items = string.Join("", links.Select(l =>
+        {
+            var href = WebUtility.HtmlEncode(PurchaseUrl(l.Token));
+            return $"""<li style="margin:0 0 12px"><strong>{WebUtility.HtmlEncode(l.ProductName)}</strong><br><a href="{href}" style="color:#0f172a;word-break:break-all">{href}</a></li>""";
+        }));
+        var html =
+            $"""
+            <!doctype html>
+            <html lang="es">
+            <body style="margin:0;padding:24px;background:#f8fafc;font-family:Arial,Helvetica,sans-serif;color:#0f172a">
+              <div style="max-width:560px;margin:0 auto;background:#ffffff;border-radius:8px;padding:32px">
+                <h1 style="margin:0 0 16px;font-size:22px">Tus enlaces de compra</h1>
+                <p style="margin:0 0 16px;font-size:16px;line-height:1.5">Pediste recuperar el acceso a tus compras. Estos son tus enlaces:</p>
+                <ul style="margin:0 0 24px;padding-left:20px;font-size:15px;line-height:1.5">{items}</ul>
+                <p style="margin:0 0 16px;font-size:14px;line-height:1.5;color:#475569">Los enlaces anteriores siguen funcionando. No los compartas, porque cualquiera que los tenga puede descargar tus plantillas.</p>
+                <p style="margin:0;font-size:14px;line-height:1.5;color:#475569">Si no fuiste tú, puedes ignorar este email.</p>
+              </div>
+            </body>
+            </html>
+            """;
+
+        return sender.SendAsync(new EmailMessage(email, subject, html, text), cancellationToken);
+    }
+
     public string PurchaseUrl(string token) => site.Value.AbsoluteUrl($"/compra/{token}");
 }

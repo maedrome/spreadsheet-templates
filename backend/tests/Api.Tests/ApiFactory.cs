@@ -34,6 +34,8 @@ public class ApiFactory : WebApplicationFactory<Program>, IAsyncLifetime
         builder.UseSetting("Email:From", "Tienda <compras@tienda.test>");
         builder.UseSetting("Checkout:PermitLimit", "1000");
         builder.UseSetting("Checkout:StatusPermitLimit", "1000");
+        builder.UseSetting("Recovery:IpPermitLimit", "1000");
+        builder.UseSetting("Recovery:EmailPermitLimit", "3");
         builder.ConfigureTestServices(services =>
         {
             services.AddHttpClient<PolarPaymentProvider>().ConfigurePrimaryHttpMessageHandler(() => Polar);

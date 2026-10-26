@@ -52,3 +52,16 @@ public class CheckoutOptions
 
     public TimeSpan Window { get; set; } = TimeSpan.FromMinutes(1);
 }
+
+public class RecoveryOptions
+{
+    public const string Section = "Recovery";
+
+    /// <summary>Solicitudes de recuperación por IP y por ventana.</summary>
+    public int IpPermitLimit { get; set; } = 3;
+
+    /// <summary>Solicitudes por email normalizado y por ventana. Superarlo no cambia la respuesta: no revela si el email existe.</summary>
+    public int EmailPermitLimit { get; set; } = 3;
+
+    public TimeSpan Window { get; set; } = TimeSpan.FromHours(1);
+}

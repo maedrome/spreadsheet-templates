@@ -47,13 +47,36 @@ const paidDate = new Intl.DateTimeFormat('es-EC', { dateStyle: 'long' });
         </h2>
         <ul class="mt-4 divide-y divide-line rounded-xl border border-line bg-surface">
           @for (template of purchase.templates; track template.id) {
-            <li class="px-6 py-4">
+            <li
+              class="flex flex-col gap-3 px-6 py-4 sm:flex-row sm:items-center sm:justify-between"
+            >
               <a
                 [routerLink]="['/plantillas', template.slug]"
                 class="font-medium text-ink hover:text-accent"
               >
                 {{ template.name }}
               </a>
+              @if (template.downloadUrl) {
+                <div class="flex flex-col gap-2 sm:flex-row sm:items-center">
+                  <a
+                    [href]="template.downloadUrl"
+                    download
+                    class="rounded-lg bg-accent px-4 py-2 text-center font-semibold text-white hover:bg-accent-strong focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
+                  >
+                    Descargar .xlsx
+                  </a>
+                  @if (template.googleSheetsCopyUrl) {
+                    <a
+                      [href]="template.googleSheetsCopyUrl"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      class="rounded-lg border border-line px-4 py-2 text-center font-semibold text-ink hover:text-accent focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
+                    >
+                      Abrir en Google Sheets
+                    </a>
+                  }
+                </div>
+              }
             </li>
           }
         </ul>

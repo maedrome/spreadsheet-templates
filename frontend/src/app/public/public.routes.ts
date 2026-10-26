@@ -23,6 +23,10 @@ export const publicRoutes: Routes = [
         path: 'compra/:token',
         loadComponent: () => import('./compra/purchase').then((m) => m.PurchasePage),
       },
+      {
+        path: 'recuperar',
+        loadComponent: () => import('./compra/recover').then((m) => m.RecoverPage),
+      },
       { path: '**', loadComponent: () => import('./not-found').then((m) => m.NotFound) },
     ],
   },
