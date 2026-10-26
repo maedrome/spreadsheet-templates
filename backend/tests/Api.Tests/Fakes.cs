@@ -20,6 +20,9 @@ public sealed class FakePolar : HttpMessageHandler
 
     public ConcurrentQueue<(HttpMethod Method, string Path, JsonObject? Body)> Requests { get; } = new();
 
+    /// <summary>El header <c>Polar-Version</c> de cada request, en orden.</summary>
+    public ConcurrentQueue<string?> Versions { get; } = new();
+
     /// <summary>Si se fija, Polar responde con este código a todo.</summary>
     public HttpStatusCode? FailWith { get; set; }
 
@@ -34,6 +37,7 @@ public sealed class FakePolar : HttpMessageHandler
         var path = request.RequestUri.AbsolutePath;
         var body = request.Content is null ? null : JsonNode.Parse(await request.Content.ReadAsStringAsync(cancellationToken))!.AsObject();
         Requests.Enqueue((request.Method, path, body));
+        Versions.Enqueue(request.Headers.TryGetValues("Polar-Version", out var versions) ? string.Join(",", versions) : null);
 
         if (FailWith is { } status)
             return new HttpResponseMessage(status) { Content = new StringContent("""{"detail":"falla simulada"}""") };

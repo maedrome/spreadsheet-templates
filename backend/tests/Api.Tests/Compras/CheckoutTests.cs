@@ -37,6 +37,18 @@ public class CheckoutTests(ApiFactory factory) : IClassFixture<ApiFactory>
     }
 
     [Fact]
+    public async Task Every_polar_request_pins_the_api_version()
+    {
+        await SaveAsync(db => db.Templates.Add(TestData.PublishedTemplate("checkout-version")));
+
+        var response = await factory.CreateClient().PostAsJsonAsync("/api/checkout", new CheckoutInput("plantilla", "checkout-version"));
+
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        Assert.NotEmpty(factory.Polar.Versions);
+        Assert.All(factory.Polar.Versions, version => Assert.Equal("2026-10", version));
+    }
+
+    [Fact]
     public async Task Checkout_rejects_products_that_are_not_published()
     {
         var draft = TestData.PublishableTemplate("checkout-borrador");

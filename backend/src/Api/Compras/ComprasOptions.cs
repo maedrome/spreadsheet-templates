@@ -4,6 +4,12 @@ public class PolarOptions
 {
     public const string Section = "Polar";
 
+    /// <summary>
+    /// Versión fija de la API (header <c>Polar-Version</c>). Sin ella Polar usa la "Current", que cambia cada trimestre.
+    /// Debe coincidir con la versión elegida en el endpoint del webhook.
+    /// </summary>
+    public const string ApiVersion = "2026-10";
+
     public string AccessToken { get; set; } = "";
     public string WebhookSecret { get; set; } = "";
 

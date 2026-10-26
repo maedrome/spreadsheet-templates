@@ -36,6 +36,7 @@ public static class ComprasSetup
             var polar = sp.GetRequiredService<IOptions<PolarOptions>>().Value;
             client.BaseAddress = polar.ApiBaseUrl;
             client.DefaultRequestHeaders.Authorization = new("Bearer", polar.AccessToken);
+            client.DefaultRequestHeaders.Add("Polar-Version", PolarOptions.ApiVersion);
             client.Timeout = TimeSpan.FromSeconds(15);
         });
         services.AddTransient<IPaymentProvider>(sp => sp.GetRequiredService<IOptions<PolarOptions>>().Value.IsConfigured
