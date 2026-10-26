@@ -50,6 +50,17 @@ public class Template
     /// <summary>Requiere <see cref="Previews"/> cargadas.</summary>
     public void Publish(DateTimeOffset now)
     {
+        var missing = MissingForPublication();
+        if (missing.Count > 0)
+            throw new DomainException($"No se puede publicar la Plantilla: falta {string.Join(", ", missing)}.");
+
+        IsPublished = true;
+        FirstPublishedAt ??= now;
+    }
+
+    /// <summary>Lo que le falta para poder publicarse; vacío si está completa. Requiere <see cref="Previews"/> cargadas.</summary>
+    public List<string> MissingForPublication()
+    {
         var missing = new List<string>();
         if (string.IsNullOrWhiteSpace(Name)) missing.Add("el nombre");
         if (string.IsNullOrWhiteSpace(Description)) missing.Add("la descripción");
@@ -57,12 +68,7 @@ public class Template
         if (Previews.Count == 0) missing.Add("al menos una Preview");
         if (string.IsNullOrWhiteSpace(XlsxPath)) missing.Add("el archivo .xlsx");
         if (string.IsNullOrWhiteSpace(GoogleSheetsCopyUrl)) missing.Add("el link de Google Sheets");
-
-        if (missing.Count > 0)
-            throw new DomainException($"No se puede publicar la Plantilla: falta {string.Join(", ", missing)}.");
-
-        IsPublished = true;
-        FirstPublishedAt ??= now;
+        return missing;
     }
 
     /// <summary>Requiere <see cref="BundleTemplates"/> cargados con su <see cref="BundleTemplate.Bundle"/>.</summary>
