@@ -28,6 +28,9 @@ public class Bundle
 
     public int Position { get; set; }
 
+    /// <summary>El producto de Polar con el que se cobra. Se crea al publicar y se actualiza al cambiar el precio.</summary>
+    public string? PolarProductId { get; set; }
+
     public List<BundleTemplate> Templates { get; } = [];
 
     /// <summary>Suma de los precios actuales de las Plantillas menos el precio del Paquete. Requiere <see cref="Templates"/> cargados con su Plantilla.</summary>
@@ -119,6 +122,7 @@ public class BundleConfiguration : IEntityTypeConfiguration<Bundle>
         builder.Property(b => b.Slug).HasMaxLength(Slug.MaxLength);
         builder.HasIndex(b => b.Slug).IsUnique();
         builder.Property(b => b.Name).HasMaxLength(200);
+        builder.Property(b => b.PolarProductId).HasMaxLength(100);
         builder.ToTable(b => b.HasCheckConstraint("CK_Bundles_PriceCents", "\"PriceCents\" >= 0"));
 
         builder.HasMany(b => b.Templates).WithOne(bt => bt.Bundle).HasForeignKey(bt => bt.BundleId);

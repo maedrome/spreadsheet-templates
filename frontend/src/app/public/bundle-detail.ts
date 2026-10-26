@@ -32,7 +32,7 @@ import { PricePipe } from './ui/price.pipe';
             Ahorras {{ bundle.savingsCents | price }}
           </p>
         </div>
-        <div class="mt-4"><app-buy-button /></div>
+        <div class="mt-4"><app-buy-button tipo="paquete" [slug]="bundle.slug" /></div>
 
         <h2 class="mt-10 text-2xl font-bold text-ink">
           Incluye {{ bundle.templates.length }} plantillas

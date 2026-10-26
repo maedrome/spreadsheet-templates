@@ -45,6 +45,10 @@ namespace Api.Migrations
                         .HasMaxLength(200)
                         .HasColumnType("character varying(200)");
 
+                    b.Property<string>("PolarProductId")
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)");
+
                     b.Property<int>("Position")
                         .HasColumnType("integer");
 
@@ -133,6 +137,10 @@ namespace Api.Migrations
                         .HasMaxLength(200)
                         .HasColumnType("character varying(200)");
 
+                    b.Property<string>("PolarProductId")
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)");
+
                     b.Property<int>("Position")
                         .HasColumnType("integer");
 
@@ -170,6 +178,9 @@ namespace Api.Migrations
                     b.Property<int?>("BundleId")
                         .HasColumnType("integer");
 
+                    b.Property<DateTimeOffset?>("ConfirmationLinkIssuedAt")
+                        .HasColumnType("timestamp with time zone");
+
                     b.Property<string>("Email")
                         .IsRequired()
                         .HasMaxLength(320)
@@ -177,6 +188,10 @@ namespace Api.Migrations
 
                     b.Property<DateTimeOffset>("PaidAt")
                         .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("PolarCheckoutId")
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)");
 
                     b.Property<string>("PolarOrderId")
                         .IsRequired()
@@ -197,11 +212,20 @@ namespace Api.Migrations
                     b.Property<int?>("TemplateId")
                         .HasColumnType("integer");
 
+                    b.Property<uint>("Version")
+                        .IsConcurrencyToken()
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("xid")
+                        .HasColumnName("xmin");
+
                     b.HasKey("Id");
 
                     b.HasIndex("BundleId");
 
                     b.HasIndex("Email");
+
+                    b.HasIndex("PolarCheckoutId")
+                        .IsUnique();
 
                     b.HasIndex("PolarOrderId")
                         .IsUnique();

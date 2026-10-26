@@ -16,11 +16,12 @@ public class Order
 {
     private Order() { }
 
-    private Order(string email, int pricePaidCents, string polarOrderId, DateTimeOffset paidAt)
+    private Order(string email, int pricePaidCents, string polarOrderId, string? polarCheckoutId, DateTimeOffset paidAt)
     {
         Email = NormalizeEmail(email);
         PricePaidCents = pricePaidCents;
         PolarOrderId = polarOrderId;
+        PolarCheckoutId = polarCheckoutId;
         Status = OrderStatus.Paid;
         PaidAt = paidAt;
     }
@@ -36,6 +37,13 @@ public class Order
 
     public int PricePaidCents { get; private set; }
     public string PolarOrderId { get; private set; } = null!;
+
+    /// <summary>La sesión de checkout de Polar que generó la Compra, con la que la página de confirmación la encuentra.</summary>
+    public string? PolarCheckoutId { get; private set; }
+
+    /// <summary>Cuándo la página de confirmación recibió su Enlace de compra. Se emite una sola vez.</summary>
+    public DateTimeOffset? ConfirmationLinkIssuedAt { get; private set; }
+
     public OrderStatus Status { get; private set; }
     public DateTimeOffset PaidAt { get; private set; }
     public DateTimeOffset? RefundedAt { get; private set; }
@@ -44,20 +52,22 @@ public class Order
     public List<OrderTemplate> Templates { get; } = [];
     public List<PurchaseLink> PurchaseLinks { get; } = [];
 
-    public static Order ForTemplate(string email, Template template, int pricePaidCents, string polarOrderId, DateTimeOffset paidAt)
+    public static Order ForTemplate(
+        string email, Template template, int pricePaidCents, string polarOrderId, DateTimeOffset paidAt, string? polarCheckoutId = null)
     {
-        var order = new Order(email, pricePaidCents, polarOrderId, paidAt) { Template = template };
+        var order = new Order(email, pricePaidCents, polarOrderId, polarCheckoutId, paidAt) { Template = template };
         order.Templates.Add(new OrderTemplate(order, template));
         return order;
     }
 
     /// <summary>Requiere <see cref="Bundle.Templates"/> cargados con su Plantilla.</summary>
-    public static Order ForBundle(string email, Bundle bundle, int pricePaidCents, string polarOrderId, DateTimeOffset paidAt)
+    public static Order ForBundle(
+        string email, Bundle bundle, int pricePaidCents, string polarOrderId, DateTimeOffset paidAt, string? polarCheckoutId = null)
     {
         if (bundle.Templates.Count == 0)
             throw new DomainException("El Paquete no tiene Plantillas para incluir en la Compra.");
 
-        var order = new Order(email, pricePaidCents, polarOrderId, paidAt) { Bundle = bundle };
+        var order = new Order(email, pricePaidCents, polarOrderId, polarCheckoutId, paidAt) { Bundle = bundle };
         foreach (var bundleTemplate in bundle.Templates.OrderBy(bt => bt.Position))
             order.Templates.Add(new OrderTemplate(order, bundleTemplate.Template));
         return order;
@@ -69,6 +79,17 @@ public class Order
         var (link, token) = PurchaseLink.Create(this, now);
         PurchaseLinks.Add(link);
         return token;
+    }
+
+    /// <summary>
+    /// El Enlace de compra para la página de confirmación, o <c>null</c> si ya se emitió: la base de datos solo guarda
+    /// hashes, así que el enlace del email no se puede devolver, y uno nuevo solo se entrega una vez.
+    /// </summary>
+    public string? IssueConfirmationLink(DateTimeOffset now)
+    {
+        if (ConfirmationLinkIssuedAt is not null) return null;
+        ConfirmationLinkIssuedAt = now;
+        return IssuePurchaseLink(now);
     }
 
     public void Refund(DateTimeOffset now)
@@ -106,6 +127,10 @@ public class OrderConfiguration : IEntityTypeConfiguration<Order>
         builder.HasIndex(o => o.Email);
         builder.Property(o => o.PolarOrderId).HasMaxLength(100);
         builder.HasIndex(o => o.PolarOrderId).IsUnique();
+        builder.Property(o => o.PolarCheckoutId).HasMaxLength(100);
+        builder.HasIndex(o => o.PolarCheckoutId).IsUnique();
+        // xmin de PostgreSQL: dos consultas simultáneas de la confirmación no pueden emitir dos Enlaces.
+        builder.Property<uint>("Version").IsRowVersion();
         builder.Property(o => o.Status).HasConversion<string>().HasMaxLength(20);
         builder.ToTable(o => o.HasCheckConstraint(
             "CK_Orders_Product",

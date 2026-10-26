@@ -1,6 +1,7 @@
 using System.Text.RegularExpressions;
 using Api.Catalogo;
 using Api.Common;
+using Api.Compras;
 using Api.Data;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
@@ -88,7 +89,8 @@ public static partial class TemplateEndpoints
         return TypedResults.Created($"/api/admin/plantillas/{template.Id}", ToDetail(template));
     }
 
-    private static async Task<Results<Ok<TemplateDetail>, NotFound, ValidationProblem>> Update(int id, TemplateInput input, AppDbContext db)
+    private static async Task<Results<Ok<TemplateDetail>, NotFound, ValidationProblem>> Update(
+        int id, TemplateInput input, AppDbContext db, IPaymentProvider payments, CancellationToken ct)
     {
         var template = await Load(db, id);
         if (template is null)
@@ -97,6 +99,7 @@ public static partial class TemplateEndpoints
         if (errors.Count > 0)
             return TypedResults.ValidationProblem(errors);
 
+        var charged = (template.Name, template.Description, template.PriceCents);
         template.ChangeSlug(input.Slug);
         template.Name = input.Name.Trim();
         template.Description = input.Description.Trim();
@@ -104,8 +107,11 @@ public static partial class TemplateEndpoints
         template.Position = input.Position ?? template.Position;
         template.GoogleSheetsCopyUrl = NullIfBlank(input.GoogleSheetsCopyUrl);
         EnsureStillPublishable(template);
+        // Polar cobra con su propio producto: primero se actualiza allá, y si falla no se guarda nada.
+        if (template.IsPublished && charged != (template.Name, template.Description, template.PriceCents))
+            await payments.SyncAsync(template, ct);
 
-        await db.SaveChangesAsync();
+        await db.SaveChangesAsync(ct);
         return TypedResults.Ok(ToDetail(template));
     }
 
@@ -128,14 +134,16 @@ public static partial class TemplateEndpoints
         return TypedResults.NoContent();
     }
 
-    private static async Task<Results<Ok<TemplateDetail>, NotFound>> Publish(int id, AppDbContext db, TimeProvider time)
+    private static async Task<Results<Ok<TemplateDetail>, NotFound>> Publish(
+        int id, AppDbContext db, TimeProvider time, IPaymentProvider payments, CancellationToken ct)
     {
         var template = await Load(db, id);
         if (template is null)
             return TypedResults.NotFound();
 
         template.Publish(time.GetUtcNow());
-        await db.SaveChangesAsync();
+        await payments.SyncAsync(template, ct);
+        await db.SaveChangesAsync(ct);
         return TypedResults.Ok(ToDetail(template));
     }
 

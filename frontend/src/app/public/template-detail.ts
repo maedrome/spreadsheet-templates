@@ -64,7 +64,7 @@ import { PricePipe } from './ui/price.pipe';
             <li>Archivo de Excel (.xlsx)</li>
             <li>Versión de Google Sheets</li>
           </ul>
-          <div class="mt-6"><app-buy-button /></div>
+          <div class="mt-6"><app-buy-button tipo="plantilla" [slug]="template.slug" /></div>
         </section>
       </article>
     } @else {

@@ -15,6 +15,14 @@ export const publicRoutes: Routes = [
         path: 'paquetes/:slug',
         loadComponent: () => import('./bundle-detail').then((m) => m.BundleDetailPage),
       },
+      {
+        path: 'compra/confirmando',
+        loadComponent: () => import('./compra/confirming').then((m) => m.ConfirmingPage),
+      },
+      {
+        path: 'compra/:token',
+        loadComponent: () => import('./compra/purchase').then((m) => m.PurchasePage),
+      },
       { path: '**', loadComponent: () => import('./not-found').then((m) => m.NotFound) },
     ],
   },
