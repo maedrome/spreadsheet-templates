@@ -9,6 +9,7 @@ import { EXTERNAL_REDIRECT } from './checkout';
 import { CheckoutStatus, Purchase } from './compra.models';
 import { ConfirmingPage, MAX_POLLS, POLL_INTERVAL_MS } from './confirming';
 import { PurchasePage } from './purchase';
+import { RECOVERY_MESSAGE, RecoverPage } from './recover';
 
 function render<T>(component: Type<T>, inputs: Record<string, unknown>) {
   const redirect = vi.fn<(url: string) => void>();
@@ -119,8 +120,20 @@ describe('PurchasePage', () => {
     paidAt: '2026-10-25T12:00:00Z',
     isRefunded: false,
     templates: [
-      { id: 1, slug: 'uno', name: 'Uno' },
-      { id: 2, slug: 'dos', name: 'Dos' },
+      {
+        id: 1,
+        slug: 'uno',
+        name: 'Uno',
+        googleSheetsCopyUrl: 'https://docs.google.com/spreadsheets/d/uno/copy',
+        downloadUrl: '/api/compras/tok/plantillas/1/xlsx',
+      },
+      {
+        id: 2,
+        slug: 'dos',
+        name: 'Dos',
+        googleSheetsCopyUrl: 'https://docs.google.com/spreadsheets/d/dos/copy',
+        downloadUrl: '/api/compras/tok/plantillas/2/xlsx',
+      },
     ],
   };
 
@@ -130,17 +143,36 @@ describe('PurchasePage', () => {
     await settle(fixture);
 
     expect(text(fixture)).toContain('Paquete hogar');
-    expect((fixture.nativeElement as HTMLElement).querySelectorAll('li a')).toHaveLength(2);
+    expect((fixture.nativeElement as HTMLElement).querySelectorAll('li a')).toHaveLength(6);
     expect(text(fixture)).not.toContain('reembolsada');
+    const links = [...(fixture.nativeElement as HTMLElement).querySelectorAll('a')];
+    expect(links.map((a) => a.getAttribute('href'))).toContain(
+      '/api/compras/tok/plantillas/1/xlsx',
+    );
+    expect(links.map((a) => a.getAttribute('href'))).toContain(
+      'https://docs.google.com/spreadsheets/d/dos/copy',
+    );
+    expect(text(fixture)).toContain('Descargar .xlsx');
+    expect(text(fixture)).toContain('Abrir en Google Sheets');
     expect(TestBed.inject(Meta).getTag("name='robots'")?.content).toBe('noindex');
   });
 
   it('says when the purchase was refunded', async () => {
     const { fixture, http } = render(PurchasePage, { token: 'tok' });
-    http.expectOne('/api/compras/tok').flush({ ...purchase, isRefunded: true });
+    http.expectOne('/api/compras/tok').flush({
+      ...purchase,
+      isRefunded: true,
+      templates: purchase.templates.map((t) => ({
+        ...t,
+        googleSheetsCopyUrl: null,
+        downloadUrl: null,
+      })),
+    });
     await settle(fixture);
 
     expect(text(fixture)).toContain('fue reembolsada');
+    expect(text(fixture)).not.toContain('Descargar');
+    expect(text(fixture)).not.toContain('Google Sheets');
   });
 
   it('says when the link is not valid', async () => {
@@ -149,5 +181,42 @@ describe('PurchasePage', () => {
     await settle(fixture);
 
     expect(text(fixture)).toContain('Este enlace no es válido');
+  });
+});
+
+describe('RecoverPage', () => {
+  it('posts the email and always shows the same confirmation, without indexing', async () => {
+    const { fixture, http } = render(RecoverPage, {});
+    expect(TestBed.inject(Meta).getTag("name='robots'")?.content).toBe('noindex');
+    const el = fixture.nativeElement as HTMLElement;
+    const input = el.querySelector('input')!;
+    input.value = 'cliente@example.com';
+    input.dispatchEvent(new Event('input'));
+    fixture.detectChanges();
+
+    el.querySelector('form')!.dispatchEvent(new Event('submit'));
+    await fixture.whenStable();
+    const request = http.expectOne('/api/recuperar');
+    expect(request.request.body).toEqual({ email: 'cliente@example.com' });
+    request.flush({ message: 'x' }, { status: 202, statusText: 'Accepted' });
+    await settle(fixture);
+
+    expect(text(fixture)).toContain(RECOVERY_MESSAGE);
+    expect(el.querySelector('form')).toBeNull();
+  });
+
+  it('does not send an invalid email', async () => {
+    const { fixture, http } = render(RecoverPage, {});
+    const el = fixture.nativeElement as HTMLElement;
+    const input = el.querySelector('input')!;
+    input.value = 'no-es-un-email';
+    input.dispatchEvent(new Event('input'));
+    fixture.detectChanges();
+
+    el.querySelector('form')!.dispatchEvent(new Event('submit'));
+    await settle(fixture);
+
+    http.expectNone('/api/recuperar');
+    expect(text(fixture)).toContain('El email no es válido.');
   });
 });

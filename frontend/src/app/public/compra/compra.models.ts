@@ -17,5 +17,14 @@ export interface Purchase {
   pricePaidCents: number;
   paidAt: string;
   isRefunded: boolean;
-  templates: { id: number; slug: string; name: string }[];
+  templates: PurchaseTemplate[];
+}
+
+/** `googleSheetsCopyUrl` y `downloadUrl` son nulos si la Compra está reembolsada. */
+export interface PurchaseTemplate {
+  id: number;
+  slug: string;
+  name: string;
+  googleSheetsCopyUrl: string | null;
+  downloadUrl: string | null;
 }

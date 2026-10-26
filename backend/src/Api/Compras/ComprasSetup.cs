@@ -9,6 +9,7 @@ public static class ComprasSetup
 {
     public const string CheckoutRateLimit = "checkout";
     public const string StatusRateLimit = "checkout-estado";
+    public const string RecoveryRateLimit = "recuperar";
 
     public static void AddCompras(this WebApplicationBuilder builder)
     {
@@ -30,6 +31,10 @@ public static class ComprasSetup
             .Validate(o => !string.IsNullOrWhiteSpace(o.From), "Falta Email:From.")
             .ValidateOnStart();
         services.Configure<CheckoutOptions>(builder.Configuration.GetSection(CheckoutOptions.Section));
+        services.Configure<RecoveryOptions>(builder.Configuration.GetSection(RecoveryOptions.Section));
+        services.AddSingleton<RecoveryQueue>();
+        services.AddSingleton<RecoveryEmailLimiter>();
+        services.AddHostedService<RecoveryWorker>();
 
         services.AddHttpClient<PolarPaymentProvider>((sp, client) =>
         {
@@ -65,6 +70,13 @@ public static class ComprasSetup
         {
             options.AddPolicy(CheckoutRateLimit, context => PerIp(context, o => o.PermitLimit));
             options.AddPolicy(StatusRateLimit, context => PerIp(context, o => o.StatusPermitLimit));
+            options.AddPolicy(RecoveryRateLimit, context =>
+            {
+                var recovery = context.RequestServices.GetRequiredService<IOptions<RecoveryOptions>>().Value;
+                return RateLimitPartition.GetFixedWindowLimiter(
+                    context.Connection.RemoteIpAddress?.ToString() ?? "unknown",
+                    _ => new FixedWindowRateLimiterOptions { PermitLimit = recovery.IpPermitLimit, Window = recovery.Window });
+            });
         });
     }
 
@@ -80,6 +92,7 @@ public static class ComprasSetup
     {
         app.MapGroup("/api/checkout").AddEndpointFilter<PaymentProviderExceptionFilter>().MapCheckout();
         app.MapGroup("/api/compras").MapPurchases();
+        app.MapGroup("/api/recuperar").MapRecovery();
         app.MapPolarWebhook();
     }
 }
