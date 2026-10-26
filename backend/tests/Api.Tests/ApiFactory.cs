@@ -8,8 +8,13 @@ public class ApiFactory : WebApplicationFactory<Program>, IAsyncLifetime
 {
     private readonly PostgreSqlContainer _postgres = new PostgreSqlBuilder("postgres:18-alpine").Build();
 
-    protected override void ConfigureWebHost(IWebHostBuilder builder) =>
+    public string StorageRoot { get; } = Path.Combine(Path.GetTempPath(), "spreadsheets-tests", Guid.NewGuid().ToString("N"));
+
+    protected override void ConfigureWebHost(IWebHostBuilder builder)
+    {
         builder.UseSetting("ConnectionStrings:Default", _postgres.GetConnectionString());
+        builder.UseSetting("Storage:Root", StorageRoot);
+    }
 
     public Task InitializeAsync() => _postgres.StartAsync();
 
@@ -17,5 +22,7 @@ public class ApiFactory : WebApplicationFactory<Program>, IAsyncLifetime
     {
         await base.DisposeAsync();
         await _postgres.DisposeAsync();
+        if (Directory.Exists(StorageRoot))
+            Directory.Delete(StorageRoot, recursive: true);
     }
 }

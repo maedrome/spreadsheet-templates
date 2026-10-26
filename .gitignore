@@ -1,4 +1,5 @@
 .env
+.data/
 .claude/settings.local.json
 
 # .NET

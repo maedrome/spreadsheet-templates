@@ -22,6 +22,8 @@ public class Preview
 
 public class PreviewVariant
 {
+    public static readonly int[] StandardWidths = [480, 960, 1600];
+
     public int Width { get; set; }
     public int Height { get; set; }
     public string FileName { get; set; } = null!;
