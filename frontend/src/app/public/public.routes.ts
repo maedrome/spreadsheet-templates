@@ -27,6 +27,14 @@ export const publicRoutes: Routes = [
         path: 'recuperar',
         loadComponent: () => import('./compra/recover').then((m) => m.RecoverPage),
       },
+      {
+        path: 'terminos',
+        loadComponent: () => import('./legal/terms').then((m) => m.TermsPage),
+      },
+      {
+        path: 'privacidad',
+        loadComponent: () => import('./legal/privacy').then((m) => m.PrivacyPage),
+      },
       { path: '**', loadComponent: () => import('./not-found').then((m) => m.NotFound) },
     ],
   },
