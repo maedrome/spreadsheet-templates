@@ -1,0 +1,9 @@
+.env
+.claude/settings.local.json
+
+# .NET
+bin/
+obj/
+*.user
+.vs/
+TestResults/

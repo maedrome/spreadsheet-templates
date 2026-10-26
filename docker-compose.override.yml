@@ -1,0 +1,6 @@
+# Auto-loaded by a plain `docker compose up` for local full-stack runs.
+# Bound to 127.0.0.1 so it never exposes a public port if loaded on the VPS.
+services:
+  web:
+    ports:
+      - "127.0.0.1:8080:80"

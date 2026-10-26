@@ -1,0 +1,3 @@
+# Sin cuentas de cliente: acceso a compras por enlace con token
+
+Los clientes compran como invitados, identificados solo por su email. El acceso a las descargas de una compra es un enlace con un token largo e imposible de adivinar, que no vence y se envía por email. Si el cliente pierde el email, en `/recuperar` escribe su email y recibe de nuevo los enlaces de todas sus compras; la página nunca revela si el email existe. Elegimos esto en lugar de cuentas con login para reducir la fricción al comprar y tener el menor número posible de rutas. A cambio, cualquiera que tenga el enlace puede descargar, y agregar cuentas más adelante obligaría a asociar compras existentes a usuarios a partir del email.
