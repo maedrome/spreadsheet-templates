@@ -28,6 +28,9 @@ public class Template
     public string? XlsxPath { get; set; }
     public string? GoogleSheetsCopyUrl { get; set; }
 
+    /// <summary>El producto de Polar con el que se cobra. Se crea al publicar y se actualiza al cambiar el precio.</summary>
+    public string? PolarProductId { get; set; }
+
     public List<Preview> Previews { get; } = [];
     public List<BundleTemplate> BundleTemplates { get; } = [];
 
@@ -93,6 +96,7 @@ public class TemplateConfiguration : IEntityTypeConfiguration<Template>
         builder.Property(t => t.Name).HasMaxLength(200);
         builder.Property(t => t.XlsxPath).HasMaxLength(500);
         builder.Property(t => t.GoogleSheetsCopyUrl).HasMaxLength(500);
+        builder.Property(t => t.PolarProductId).HasMaxLength(100);
         builder.ToTable(t => t.HasCheckConstraint("CK_Templates_PriceCents", "\"PriceCents\" >= 0"));
 
         builder.HasMany(t => t.Previews).WithOne(p => p.Template).HasForeignKey(p => p.TemplateId);

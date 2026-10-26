@@ -109,7 +109,7 @@ describe('Home', () => {
 });
 
 describe('TemplateDetailPage', () => {
-  it('shows the gallery, the price and a disabled buy button', async () => {
+  it('shows the gallery, the price and the buy button', async () => {
     const { fixture, http } = await render(TemplateDetailPage, { slug: 'uno' });
     await respond(fixture, () =>
       http.expectOne('/api/plantillas/uno').flush({
@@ -124,7 +124,10 @@ describe('TemplateDetailPage', () => {
     const html = fixture.nativeElement as HTMLElement;
     expect(html.querySelector('h1')?.textContent).toContain('Plantilla Uno');
     expect(html.querySelectorAll('img').length).toBe(3);
-    expect(html.querySelector('button[disabled]')?.textContent).toContain('Comprar');
+    const buy = [...html.querySelectorAll('button')].find((b) =>
+      b.textContent?.includes('Comprar'),
+    );
+    expect(buy?.disabled).toBe(false);
     expect(TestBed.inject(Title).getTitle()).toContain('Plantilla Uno');
     expect(TestBed.inject(Meta).getTag("name='description'")?.content).toBe('Una descripción');
   });
@@ -160,7 +163,7 @@ describe('BundleDetailPage', () => {
     const html = fixture.nativeElement as HTMLElement;
     expect(text(fixture)).toMatch(/Ahorras\s+\$\s?7[,.]00/);
     expect(html.querySelectorAll('li a')).toHaveLength(2);
-    expect(html.querySelector('button[disabled]')).toBeTruthy();
+    expect(html.querySelector('app-buy-button button')?.textContent).toContain('Comprar');
   });
 });
 

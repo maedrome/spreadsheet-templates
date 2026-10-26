@@ -1,5 +1,6 @@
 using Api.Catalogo;
 using Api.Common;
+using Api.Compras;
 using Api.Data;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.EntityFrameworkCore;
@@ -72,7 +73,8 @@ public static class BundleEndpoints
         return TypedResults.Created($"/api/admin/paquetes/{bundle.Id}", ToDetail(bundle));
     }
 
-    private static async Task<Results<Ok<BundleDetail>, NotFound, ValidationProblem>> Update(int id, BundleInput input, AppDbContext db)
+    private static async Task<Results<Ok<BundleDetail>, NotFound, ValidationProblem>> Update(
+        int id, BundleInput input, AppDbContext db, IPaymentProvider payments, CancellationToken ct)
     {
         var bundle = await Load(db, id);
         if (bundle is null)
@@ -81,6 +83,7 @@ public static class BundleEndpoints
         if (errors.Count > 0)
             return TypedResults.ValidationProblem(errors);
 
+        var charged = (bundle.Name, bundle.Description, bundle.PriceCents);
         bundle.ChangeSlug(input.Slug);
         bundle.Name = input.Name.Trim();
         bundle.Description = input.Description.Trim();
@@ -89,8 +92,11 @@ public static class BundleEndpoints
         if (bundle.IsPublished && bundle.PublicationProblems() is { Count: > 0 } problems)
             throw new DomainException(
                 $"El Paquete está publicado y dejaría de cumplir las reglas: {string.Join("; ", problems)}. Despublícalo antes.");
+        // Polar cobra con su propio producto: primero se actualiza allá, y si falla no se guarda nada.
+        if (bundle.IsPublished && charged != (bundle.Name, bundle.Description, bundle.PriceCents))
+            await payments.SyncAsync(bundle, ct);
 
-        await db.SaveChangesAsync();
+        await db.SaveChangesAsync(ct);
         return TypedResults.Ok(ToDetail(bundle));
     }
 
@@ -109,14 +115,16 @@ public static class BundleEndpoints
         return TypedResults.NoContent();
     }
 
-    private static async Task<Results<Ok<BundleDetail>, NotFound>> Publish(int id, AppDbContext db, TimeProvider time)
+    private static async Task<Results<Ok<BundleDetail>, NotFound>> Publish(
+        int id, AppDbContext db, TimeProvider time, IPaymentProvider payments, CancellationToken ct)
     {
         var bundle = await Load(db, id);
         if (bundle is null)
             return TypedResults.NotFound();
 
         bundle.Publish(time.GetUtcNow());
-        await db.SaveChangesAsync();
+        await payments.SyncAsync(bundle, ct);
+        await db.SaveChangesAsync(ct);
         return TypedResults.Ok(ToDetail(bundle));
     }
 

@@ -4,6 +4,8 @@
     <TargetFramework>net10.0</TargetFramework>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
+    <!-- Secretos de desarrollo (Polar, Resend) en dotnet user-secrets, fuera del repo. -->
+    <UserSecretsId>spreadsheet-templates-api</UserSecretsId>
   </PropertyGroup>
 
   <ItemGroup>

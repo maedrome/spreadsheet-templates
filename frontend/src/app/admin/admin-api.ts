@@ -188,6 +188,11 @@ export class AdminApi {
       this.http.delete<BundleDetail>(`${BUNDLES}/${id}/plantillas/${templateId}`),
     );
   }
+
+  /** Emite un Enlace de compra nuevo y lo envía por email. Los anteriores siguen sirviendo. */
+  resendPurchaseLink(orderId: number) {
+    return firstValueFrom(this.http.post<void>(`${ADMIN_API}/compras/${orderId}/reenviar`, null));
+  }
 }
 
 function formData(file: File): FormData {

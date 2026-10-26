@@ -1,15 +1,19 @@
 import { httpResource } from '@angular/common/http';
-import { Component } from '@angular/core';
-import { ADMIN_API, OrderListItem } from '../admin-api';
+import { Component, inject, signal } from '@angular/core';
+import { ADMIN_API, AdminApi, OrderListItem } from '../admin-api';
 import { DateTimePipe, UsdPipe, problemMessage } from '../shared/format';
 import { ui } from '../shared/ui';
 
-/** Compras de solo lectura. El reenvío del Enlace de compra llega con los emails, en la fase 4. */
+/** Las Compras, con el reenvío del Enlace de compra por email. */
 @Component({
   selector: 'app-admin-order-list',
   imports: [UsdPipe, DateTimePipe],
   template: `
     <h1 class="mb-6 text-2xl font-semibold">Compras</h1>
+
+    <p role="status" class="mb-4 min-h-6 text-sm" [class.text-red-700]="notice()?.error">
+      {{ notice()?.text }}
+    </p>
 
     @if (orders.error(); as error) {
       <p role="alert" class="text-red-700">{{ message(error) }}</p>
@@ -29,6 +33,7 @@ import { ui } from '../shared/ui';
                 <th scope="col">Producto</th>
                 <th scope="col">Monto</th>
                 <th scope="col">Estado</th>
+                <th scope="col"><span class="sr-only">Acciones</span></th>
               </tr>
             </thead>
             <tbody>
@@ -48,6 +53,19 @@ import { ui } from '../shared/ui';
                       {{ order.status === 'Paid' ? 'Pagada' : 'Reembolsada' }}
                     </span>
                   </td>
+                  <td class="whitespace-nowrap text-right">
+                    @if (order.status === 'Paid') {
+                      <button
+                        type="button"
+                        [class]="ui.secondary"
+                        [disabled]="sending() === order.id"
+                        [attr.aria-label]="'Reenviar el Enlace de compra a ' + order.email"
+                        (click)="resend(order)"
+                      >
+                        {{ sending() === order.id ? 'Enviando…' : 'Reenviar enlace' }}
+                      </button>
+                    }
+                  </td>
                 </tr>
               }
             </tbody>
@@ -63,4 +81,23 @@ export class OrderList {
   protected readonly ui = ui;
   protected readonly orders = httpResource<OrderListItem[]>(() => `${ADMIN_API}/compras`);
   protected readonly message = problemMessage;
+  protected readonly sending = signal<number | null>(null);
+  protected readonly notice = signal<{ text: string; error: boolean } | null>(null);
+  private readonly api = inject(AdminApi);
+
+  protected async resend(order: OrderListItem): Promise<void> {
+    this.sending.set(order.id);
+    this.notice.set(null);
+    try {
+      await this.api.resendPurchaseLink(order.id);
+      this.notice.set({
+        text: `Enviamos un Enlace de compra nuevo a ${order.email}.`,
+        error: false,
+      });
+    } catch (error) {
+      this.notice.set({ text: problemMessage(error), error: true });
+    } finally {
+      this.sending.set(null);
+    }
+  }
 }

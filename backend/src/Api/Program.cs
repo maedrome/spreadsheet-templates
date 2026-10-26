@@ -1,6 +1,7 @@
 using Api.Admin;
 using Api.Catalogo;
 using Api.Common;
+using Api.Compras;
 using Api.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
@@ -17,6 +18,7 @@ builder.Services.PostConfigure<StorageOptions>(options =>
     options.Root = Path.GetFullPath(options.Root, builder.Environment.ContentRootPath));
 
 builder.AddAdmin();
+builder.AddCompras();
 
 var app = builder.Build();
 
@@ -44,5 +46,6 @@ app.MapHealthChecks("/api/health");
 app.MapCatalogo();
 app.MapSeo();
 app.MapAdmin();
+app.MapCompras();
 
 app.Run();

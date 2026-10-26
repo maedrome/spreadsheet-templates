@@ -1,6 +1,7 @@
 using System.Security.Claims;
 using System.Threading.RateLimiting;
 using Api.Common;
+using Api.Compras;
 using Api.Data;
 using Microsoft.AspNetCore.Antiforgery;
 using Microsoft.AspNetCore.Authentication.Cookies;
@@ -132,7 +133,8 @@ public static class AdminSetup
     {
         var admin = app.MapGroup("/api/admin")
             .AddEndpointFilter<AntiforgeryFilter>()
-            .AddEndpointFilter<DomainExceptionFilter>();
+            .AddEndpointFilter<DomainExceptionFilter>()
+            .AddEndpointFilter<PaymentProviderExceptionFilter>();
 
         admin.MapGroup("/auth").MapAdminAuth();
 
