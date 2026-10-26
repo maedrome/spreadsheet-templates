@@ -12,6 +12,7 @@ public class ApiFactory : WebApplicationFactory<Program>, IAsyncLifetime
 
     protected override void ConfigureWebHost(IWebHostBuilder builder)
     {
+        builder.UseEnvironment("Test"); // sin el seed de desarrollo
         builder.UseSetting("ConnectionStrings:Default", _postgres.GetConnectionString());
         builder.UseSetting("Storage:Root", StorageRoot);
     }

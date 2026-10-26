@@ -11,6 +11,7 @@ services:
     environment:
       ConnectionStrings__Default: Host=postgres;Database=${POSTGRES_DB:-spreadsheets};Username=${POSTGRES_USER:-app};Password=${POSTGRES_PASSWORD:?POSTGRES_PASSWORD is required};GSS Encryption Mode=Disable
       ASPNETCORE_FORWARDEDHEADERS_ENABLED: "true"
+      Site__BaseUrl: ${SITE_BASE_URL:-http://localhost}
     volumes:
       - files:/data/files
     depends_on:
