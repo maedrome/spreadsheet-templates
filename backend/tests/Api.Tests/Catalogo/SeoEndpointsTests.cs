@@ -34,6 +34,15 @@ public class SeoEndpointsTests(ApiFactory factory) : IClassFixture<ApiFactory>
     }
 
     [Fact]
+    public async Task Sitemap_includes_legal_pages()
+    {
+        var xml = await Client().GetStringAsync("/sitemap.xml");
+
+        Assert.Contains("<loc>https://tienda.test/terminos</loc>", xml);
+        Assert.Contains("<loc>https://tienda.test/privacidad</loc>", xml);
+    }
+
+    [Fact]
     public async Task Robots_disallows_private_areas_and_points_to_sitemap()
     {
         var response = await Client().GetAsync("/robots.txt");

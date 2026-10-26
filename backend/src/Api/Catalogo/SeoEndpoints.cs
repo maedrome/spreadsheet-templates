@@ -34,6 +34,8 @@ public static class SeoEndpoints
         var urls = new List<string> { site.Value.AbsoluteUrl("/") };
         urls.AddRange(bundles.Select(s => site.Value.AbsoluteUrl($"/paquetes/{s}")));
         urls.AddRange(templates.Select(s => site.Value.AbsoluteUrl($"/plantillas/{s}")));
+        urls.Add(site.Value.AbsoluteUrl("/terminos"));
+        urls.Add(site.Value.AbsoluteUrl("/privacidad"));
 
         XNamespace ns = "http://www.sitemaps.org/schemas/sitemap/0.9";
         var document = new XDocument(

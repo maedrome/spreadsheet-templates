@@ -21,17 +21,22 @@ export class Faq {
     {
       question: '¿Cómo recibo el archivo?',
       answer:
-        'Al terminar el pago te enviamos un email con tu enlace de compra. Desde ahí descargas el archivo de Excel y abres tu copia en Google Sheets. No necesitas crear una cuenta.',
+        'Al confirmarse el pago te enviamos un email con tu Enlace de compra. Desde ahí descargas el archivo .xlsx y abres tu copia en Google Sheets. La entrega es inmediata y no necesitas crear una cuenta.',
     },
     {
       question: '¿Funciona en Mac y con Google Sheets?',
       answer:
-        'Sí. Cada plantilla incluye un archivo .xlsx que abre Excel en Windows y Mac, y una versión de Google Sheets que copias a tu propio Drive con un clic.',
+        'Sí. Cada Plantilla incluye un archivo .xlsx que abre Excel en Windows y Mac, y una copia de Google Sheets que pasa a tu propia cuenta de Google con un clic.',
     },
     {
       question: '¿Puedo pedir un reembolso?',
       answer:
-        'Sí. Si la plantilla no te sirve, te devolvemos tu dinero dentro de los 14 días posteriores a la compra, sin trámites complicados.',
+        'Sí. Tienes 14 días desde tu Compra para pedir el reembolso total, sin preguntas: solo escribe al email de contacto. Al reembolsarla, el Enlace de compra deja de dar acceso a las descargas.',
+    },
+    {
+      question: '¿Qué pasa si pierdo el email?',
+      answer:
+        'Entra a "Recuperar mi compra", escribe el email con el que pagaste y te enviamos de nuevo los enlaces de tus Compras.',
     },
   ];
 }
