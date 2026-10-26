@@ -59,7 +59,7 @@ public class Bundle
             ?? throw new DomainException($"La Plantilla \"{template.Name}\" no está en el Paquete.");
 
         Templates.Remove(bundleTemplate);
-        if (IsPublished && Problems().Count > 0)
+        if (IsPublished && PublicationProblems().Count > 0)
         {
             Templates.Add(bundleTemplate);
             throw new DomainException("No se puede quitar la Plantilla: el Paquete publicado dejaría de cumplir las reglas de publicación.");
@@ -70,7 +70,7 @@ public class Bundle
     /// <summary>Requiere <see cref="Templates"/> cargados con su Plantilla.</summary>
     public void Publish(DateTimeOffset now)
     {
-        var problems = Problems();
+        var problems = PublicationProblems();
         if (problems.Count > 0)
             throw new DomainException($"No se puede publicar el Paquete: {string.Join("; ", problems)}.");
 
@@ -80,7 +80,8 @@ public class Bundle
 
     public void Unpublish() => IsPublished = false;
 
-    private List<string> Problems()
+    /// <summary>Por qué no cumple las reglas de publicación; vacío si las cumple. Requiere <see cref="Templates"/> cargados con su Plantilla.</summary>
+    public List<string> PublicationProblems()
     {
         var problems = new List<string>();
         if (Templates.Count < MinTemplates)

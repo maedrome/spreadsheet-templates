@@ -1,0 +1,210 @@
+<p class="mb-2 text-sm"><a routerLink="/admin/plantillas" [class]="ui.link">← Plantillas</a></p>
+
+@if (loadError()) {
+  <p role="alert" class="text-red-700">{{ loadError() }}</p>
+} @else if (!isNew() && !template()) {
+  <p class="text-slate-600">Cargando…</p>
+} @else {
+  <div class="mb-6 flex flex-wrap items-center gap-3">
+    <h1 class="text-2xl font-semibold">{{ template()?.name ?? 'Nueva Plantilla' }}</h1>
+    @if (template(); as saved) {
+      <span [class]="saved.isPublished ? ui.published : ui.draft">
+        {{ saved.isPublished ? 'Publicada' : 'Sin publicar' }}
+      </span>
+    }
+  </div>
+
+  <div aria-live="polite" class="mb-4">
+    @if (notice()) {
+      <p class="rounded bg-green-50 px-3 py-2 text-sm text-green-800">{{ notice() }}</p>
+    }
+    @if (actionError()) {
+      <p role="alert" class="rounded bg-red-50 px-3 py-2 text-sm text-red-700">
+        {{ actionError() }}
+      </p>
+    }
+  </div>
+
+  <div class="grid gap-6 lg:grid-cols-[2fr_1fr]">
+    <form [formRoot]="form" class="space-y-5" [class]="ui.card" aria-label="Datos de la Plantilla">
+      <div>
+        <label [class]="ui.label" for="template-name">Nombre</label>
+        <input
+          id="template-name"
+          type="text"
+          [class]="ui.input"
+          [formField]="form.name"
+          [attr.aria-invalid]="form.name().touched() && form.name().invalid()"
+          (blur)="suggestSlug()"
+          aria-describedby="template-name-errors"
+        />
+        <app-field-errors id="template-name-errors" [field]="form.name" />
+      </div>
+
+      <div>
+        <label [class]="ui.label" for="template-slug">Slug</label>
+        <input
+          id="template-slug"
+          type="text"
+          class="font-mono"
+          [class]="ui.input"
+          [formField]="form.slug"
+          [attr.aria-invalid]="form.slug().touched() && form.slug().invalid()"
+          aria-describedby="template-slug-hint template-slug-errors"
+        />
+        <p id="template-slug-hint" [class]="ui.hint">
+          @if (template()?.slugLocked) {
+            Ya no se puede cambiar: la Plantilla se publicó alguna vez.
+          } @else {
+            La dirección de la Plantilla en la tienda. Queda fija al publicarla.
+          }
+        </p>
+        <app-field-errors id="template-slug-errors" [field]="form.slug" />
+      </div>
+
+      <div>
+        <label [class]="ui.label" for="template-description">Descripción</label>
+        <textarea
+          id="template-description"
+          rows="6"
+          [class]="ui.input"
+          [formField]="form.description"
+          [attr.aria-invalid]="form.description().touched() && form.description().invalid()"
+          aria-describedby="template-description-errors"
+        ></textarea>
+        <app-field-errors id="template-description-errors" [field]="form.description" />
+      </div>
+
+      <div class="grid gap-5 sm:grid-cols-2">
+        <div>
+          <label [class]="ui.label" for="template-price">Precio (USD)</label>
+          <input
+            id="template-price"
+            type="number"
+            step="0.01"
+            [class]="ui.input"
+            [formField]="form.price"
+            [attr.aria-invalid]="form.price().touched() && form.price().invalid()"
+            aria-describedby="template-price-errors"
+          />
+          <app-field-errors id="template-price-errors" [field]="form.price" />
+        </div>
+        <div>
+          <label [class]="ui.label" for="template-position">Posición en la tienda</label>
+          <input
+            id="template-position"
+            type="number"
+            step="1"
+            [class]="ui.input"
+            [formField]="form.position"
+            [attr.aria-invalid]="form.position().touched() && form.position().invalid()"
+            aria-describedby="template-position-hint template-position-errors"
+          />
+          <p id="template-position-hint" [class]="ui.hint">
+            Las de menor número aparecen primero. Vacío: al final.
+          </p>
+          <app-field-errors id="template-position-errors" [field]="form.position" />
+        </div>
+      </div>
+
+      <div>
+        <label [class]="ui.label" for="template-sheets">Link de Google Sheets</label>
+        <input
+          id="template-sheets"
+          type="url"
+          [class]="ui.input"
+          placeholder="https://docs.google.com/spreadsheets/d/…/copy"
+          [formField]="form.googleSheetsCopyUrl"
+          [attr.aria-invalid]="
+            form.googleSheetsCopyUrl().touched() && form.googleSheetsCopyUrl().invalid()
+          "
+          aria-describedby="template-sheets-hint template-sheets-errors"
+        />
+        <p id="template-sheets-hint" [class]="ui.hint">
+          El link que termina en /copy, para que el cliente haga su copia.
+        </p>
+        <app-field-errors id="template-sheets-errors" [field]="form.googleSheetsCopyUrl" />
+      </div>
+
+      <button type="submit" [class]="ui.primary" [disabled]="form().submitting()">
+        {{ isNew() ? 'Crear Plantilla' : 'Guardar cambios' }}
+      </button>
+    </form>
+
+    @if (template(); as saved) {
+      <aside class="space-y-6">
+        <section [class]="ui.card" aria-labelledby="publish-title">
+          <h2 id="publish-title" class="mb-3 text-lg font-semibold">Publicación</h2>
+          @if (saved.isPublished) {
+            <p class="mb-4 text-sm text-slate-700">Visible y comprable en la tienda.</p>
+            <button
+              type="button"
+              [class]="ui.secondary"
+              [disabled]="busy()"
+              (click)="setPublished(false)"
+            >
+              Despublicar
+            </button>
+          } @else {
+            @if (saved.missingForPublication.length > 0) {
+              <p class="mb-2 text-sm text-slate-700">Para publicarla falta:</p>
+              <ul class="mb-4 list-disc pl-5 text-sm text-slate-700">
+                @for (missing of saved.missingForPublication; track missing) {
+                  <li>{{ missing }}</li>
+                }
+              </ul>
+            } @else {
+              <p class="mb-4 text-sm text-slate-700">Tiene todo lo necesario para publicarse.</p>
+            }
+            @if (form().dirty()) {
+              <p class="mb-2 text-sm text-slate-700">Guarda los cambios antes de publicar.</p>
+            }
+            <button
+              type="button"
+              [class]="ui.primary"
+              [disabled]="busy() || form().dirty() || saved.missingForPublication.length > 0"
+              (click)="setPublished(true)"
+            >
+              Publicar
+            </button>
+          }
+        </section>
+
+        @if (saved.bundles.length > 0) {
+          <section [class]="ui.card" aria-labelledby="bundles-title">
+            <h2 id="bundles-title" class="mb-3 text-lg font-semibold">En Paquetes</h2>
+            <ul class="space-y-1 text-sm">
+              @for (bundle of saved.bundles; track bundle.id) {
+                <li>
+                  <a [class]="ui.link" [routerLink]="['/admin/paquetes', bundle.id]">{{
+                    bundle.name
+                  }}</a>
+                  <span class="text-slate-600">{{ bundle.isPublished ? '(publicado)' : '' }}</span>
+                </li>
+              }
+            </ul>
+          </section>
+        }
+
+        @if (!saved.isPublished) {
+          <section [class]="ui.card" aria-labelledby="delete-title">
+            <h2 id="delete-title" class="mb-3 text-lg font-semibold">Borrar</h2>
+            <p class="mb-4 text-sm text-slate-700">Solo se puede borrar si no tiene Compras.</p>
+            <button type="button" [class]="ui.danger" [disabled]="busy()" (click)="remove()">
+              Borrar Plantilla
+            </button>
+          </section>
+        }
+      </aside>
+
+      <div class="space-y-6 lg:col-span-2">
+        <app-template-previews [template]="saved" (changed)="onFilesChanged($event)" />
+        <app-template-xlsx [template]="saved" (changed)="onFilesChanged($event)" />
+      </div>
+    } @else {
+      <p class="text-sm text-slate-600">
+        Crea la Plantilla para subir sus Previews y el archivo .xlsx.
+      </p>
+    }
+  </div>
+}

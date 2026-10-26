@@ -8,6 +8,9 @@ public class ApiFactory : WebApplicationFactory<Program>, IAsyncLifetime
 {
     private readonly PostgreSqlContainer _postgres = new PostgreSqlBuilder("postgres:18-alpine").Build();
 
+    // HTTPS because outside Development the admin cookies are Secure-only.
+    public ApiFactory() => ClientOptions.BaseAddress = new Uri("https://localhost");
+
     public string StorageRoot { get; } = Path.Combine(Path.GetTempPath(), "spreadsheets-tests", Guid.NewGuid().ToString("N"));
 
     protected override void ConfigureWebHost(IWebHostBuilder builder)

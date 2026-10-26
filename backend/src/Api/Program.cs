@@ -1,3 +1,4 @@
+using Api.Admin;
 using Api.Catalogo;
 using Api.Common;
 using Api.Data;
@@ -15,6 +16,8 @@ builder.Services.Configure<StorageOptions>(builder.Configuration.GetSection(Stor
 builder.Services.PostConfigure<StorageOptions>(options =>
     options.Root = Path.GetFullPath(options.Root, builder.Environment.ContentRootPath));
 
+builder.AddAdmin();
+
 var app = builder.Build();
 
 using (var scope = app.Services.CreateScope())
@@ -26,11 +29,20 @@ var storage = app.Services.GetRequiredService<IOptions<StorageOptions>>().Value;
 Directory.CreateDirectory(storage.PreviewsPath);
 Directory.CreateDirectory(storage.TemplatesPath);
 
+if (CreateAdminCommand.IsInvoked(args))
+{
+    Environment.ExitCode = await CreateAdminCommand.RunAsync(app.Services, args);
+    return;
+}
+
 if (app.Environment.IsDevelopment())
     await DevSeed.RunAsync(app.Services);
+
+app.UseRateLimiter();
 
 app.MapHealthChecks("/api/health");
 app.MapCatalogo();
 app.MapSeo();
+app.MapAdmin();
 
 app.Run();

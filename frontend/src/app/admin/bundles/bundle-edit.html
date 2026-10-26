@@ -1,0 +1,272 @@
+<p class="mb-2 text-sm"><a routerLink="/admin/paquetes" [class]="ui.link">← Paquetes</a></p>
+
+@if (loadError()) {
+  <p role="alert" class="text-red-700">{{ loadError() }}</p>
+} @else if (!isNew() && !bundle()) {
+  <p class="text-slate-600">Cargando…</p>
+} @else {
+  <div class="mb-6 flex flex-wrap items-center gap-3">
+    <h1 class="text-2xl font-semibold">{{ bundle()?.name ?? 'Nuevo Paquete' }}</h1>
+    @if (bundle(); as saved) {
+      <span [class]="saved.isPublished ? ui.published : ui.draft">
+        {{ saved.isPublished ? 'Publicado' : 'Sin publicar' }}
+      </span>
+    }
+  </div>
+
+  <div aria-live="polite" class="mb-4">
+    @if (notice()) {
+      <p class="rounded bg-green-50 px-3 py-2 text-sm text-green-800">{{ notice() }}</p>
+    }
+    @if (actionError()) {
+      <p role="alert" class="rounded bg-red-50 px-3 py-2 text-sm text-red-700">
+        {{ actionError() }}
+      </p>
+    }
+  </div>
+
+  <div class="grid gap-6 lg:grid-cols-[2fr_1fr]">
+    <form [formRoot]="form" class="space-y-5" [class]="ui.card" aria-label="Datos del Paquete">
+      <div>
+        <label [class]="ui.label" for="bundle-name">Nombre</label>
+        <input
+          id="bundle-name"
+          type="text"
+          [class]="ui.input"
+          [formField]="form.name"
+          [attr.aria-invalid]="form.name().touched() && form.name().invalid()"
+          (blur)="suggestSlug()"
+          aria-describedby="bundle-name-errors"
+        />
+        <app-field-errors id="bundle-name-errors" [field]="form.name" />
+      </div>
+
+      <div>
+        <label [class]="ui.label" for="bundle-slug">Slug</label>
+        <input
+          id="bundle-slug"
+          type="text"
+          class="font-mono"
+          [class]="ui.input"
+          [formField]="form.slug"
+          [attr.aria-invalid]="form.slug().touched() && form.slug().invalid()"
+          aria-describedby="bundle-slug-hint bundle-slug-errors"
+        />
+        <p id="bundle-slug-hint" [class]="ui.hint">
+          @if (bundle()?.slugLocked) {
+            Ya no se puede cambiar: el Paquete se publicó alguna vez.
+          } @else {
+            La dirección del Paquete en la tienda. Queda fija al publicarlo.
+          }
+        </p>
+        <app-field-errors id="bundle-slug-errors" [field]="form.slug" />
+      </div>
+
+      <div>
+        <label [class]="ui.label" for="bundle-description">Descripción</label>
+        <textarea
+          id="bundle-description"
+          rows="5"
+          [class]="ui.input"
+          [formField]="form.description"
+          [attr.aria-invalid]="form.description().touched() && form.description().invalid()"
+          aria-describedby="bundle-description-errors"
+        ></textarea>
+        <app-field-errors id="bundle-description-errors" [field]="form.description" />
+      </div>
+
+      <div class="grid gap-5 sm:grid-cols-2">
+        <div>
+          <label [class]="ui.label" for="bundle-price">Precio (USD)</label>
+          <input
+            id="bundle-price"
+            type="number"
+            step="0.01"
+            [class]="ui.input"
+            [formField]="form.price"
+            [attr.aria-invalid]="form.price().touched() && form.price().invalid()"
+            aria-describedby="bundle-price-errors"
+          />
+          <app-field-errors id="bundle-price-errors" [field]="form.price" />
+        </div>
+        <div>
+          <label [class]="ui.label" for="bundle-position">Posición en la tienda</label>
+          <input
+            id="bundle-position"
+            type="number"
+            step="1"
+            [class]="ui.input"
+            [formField]="form.position"
+            [attr.aria-invalid]="form.position().touched() && form.position().invalid()"
+            aria-describedby="bundle-position-hint bundle-position-errors"
+          />
+          <p id="bundle-position-hint" [class]="ui.hint">
+            Los de menor número aparecen primero. Vacío: al final.
+          </p>
+          <app-field-errors id="bundle-position-errors" [field]="form.position" />
+        </div>
+      </div>
+
+      <button type="submit" [class]="ui.primary" [disabled]="form().submitting()">
+        {{ isNew() ? 'Crear Paquete' : 'Guardar cambios' }}
+      </button>
+    </form>
+
+    @if (bundle(); as saved) {
+      <aside class="space-y-6">
+        <section [class]="ui.card" aria-labelledby="savings-title">
+          <h2 id="savings-title" class="mb-3 text-lg font-semibold">Ahorro</h2>
+          <dl class="space-y-1 text-sm">
+            <div class="flex justify-between gap-4">
+              <dt class="text-slate-700">Suma de las Plantillas</dt>
+              <dd>{{ templatesTotalCents() | usd }}</dd>
+            </div>
+            <div class="flex justify-between gap-4">
+              <dt class="text-slate-700">Precio del Paquete</dt>
+              <dd>{{ priceCents() | usd }}</dd>
+            </div>
+            <div class="flex justify-between gap-4 border-t border-slate-200 pt-1 font-semibold">
+              <dt>Ahorro</dt>
+              <dd
+                data-testid="savings"
+                [class]="savingsCents() > 0 ? 'text-green-800' : 'text-red-700'"
+              >
+                {{ savingsCents() | usd }}
+                @if (savingsCents() > 0) {
+                  ({{ savingsPercent() }} %)
+                }
+              </dd>
+            </div>
+          </dl>
+          @if (savingsCents() <= 0) {
+            <p class="mt-3 text-sm text-red-700">
+              El precio tiene que ser menor que la suma de las Plantillas.
+            </p>
+          }
+        </section>
+
+        <section [class]="ui.card" aria-labelledby="publish-title">
+          <h2 id="publish-title" class="mb-3 text-lg font-semibold">Publicación</h2>
+          @if (saved.isPublished) {
+            <p class="mb-4 text-sm text-slate-700">Visible y comprable en la tienda.</p>
+            <button
+              type="button"
+              [class]="ui.secondary"
+              [disabled]="busy()"
+              (click)="setPublished(false)"
+            >
+              Despublicar
+            </button>
+          } @else {
+            @if (saved.publicationProblems.length > 0) {
+              <p class="mb-2 text-sm text-slate-700">Para publicarlo:</p>
+              <ul class="mb-4 list-disc pl-5 text-sm text-slate-700">
+                @for (problem of saved.publicationProblems; track problem) {
+                  <li>{{ problem }}</li>
+                }
+              </ul>
+            }
+            @if (form().dirty()) {
+              <p class="mb-2 text-sm text-slate-700">Guarda los cambios antes de publicar.</p>
+            }
+            <button
+              type="button"
+              [class]="ui.primary"
+              [disabled]="busy() || form().dirty() || saved.publicationProblems.length > 0"
+              (click)="setPublished(true)"
+            >
+              Publicar
+            </button>
+          }
+        </section>
+
+        @if (!saved.isPublished) {
+          <section [class]="ui.card" aria-labelledby="delete-title">
+            <h2 id="delete-title" class="mb-3 text-lg font-semibold">Borrar</h2>
+            <p class="mb-4 text-sm text-slate-700">Solo se puede borrar si no tiene Compras.</p>
+            <button type="button" [class]="ui.danger" [disabled]="busy()" (click)="remove()">
+              Borrar Paquete
+            </button>
+          </section>
+        }
+      </aside>
+
+      <section class="lg:col-span-2" [class]="ui.card" aria-labelledby="templates-title">
+        <h2 id="templates-title" class="mb-4 text-lg font-semibold">Plantillas del Paquete</h2>
+        @if (saved.templates.length > 0) {
+          <table class="mb-6" [class]="ui.table">
+            <thead>
+              <tr>
+                <th scope="col">Plantilla</th>
+                <th scope="col">Precio</th>
+                <th scope="col">Estado</th>
+                <th scope="col"><span class="sr-only">Acciones</span></th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (template of saved.templates; track template.id) {
+                <tr>
+                  <td>
+                    <a [class]="ui.link" [routerLink]="['/admin/plantillas', template.id]">{{
+                      template.name
+                    }}</a>
+                  </td>
+                  <td>{{ template.priceCents | usd }}</td>
+                  <td>
+                    <span [class]="template.isPublished ? ui.published : ui.draft">
+                      {{ template.isPublished ? 'Publicada' : 'Sin publicar' }}
+                    </span>
+                  </td>
+                  <td class="text-right">
+                    <button
+                      type="button"
+                      class="px-2 py-1"
+                      [class]="ui.danger"
+                      [disabled]="busy()"
+                      [attr.aria-label]="'Quitar ' + template.name + ' del Paquete'"
+                      (click)="removeTemplate(template.id)"
+                    >
+                      Quitar
+                    </button>
+                  </td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        } @else {
+          <p class="mb-4 text-sm text-slate-600">Todavía no tiene Plantillas.</p>
+        }
+
+        <div class="flex flex-wrap items-end gap-3">
+          <div class="min-w-64 grow">
+            <label [class]="ui.label" for="bundle-add-template">Agregar Plantilla</label>
+            <select
+              id="bundle-add-template"
+              [class]="ui.input"
+              [value]="selectedTemplateId()"
+              (change)="selectTemplate($event)"
+            >
+              <option value="">Elige una Plantilla…</option>
+              @for (template of available(); track template.id) {
+                <option [value]="template.id">
+                  {{ template.name }} · {{ template.priceCents | usd
+                  }}{{ template.isPublished ? '' : ' · sin publicar' }}
+                </option>
+              }
+            </select>
+          </div>
+          <button
+            type="button"
+            [class]="ui.secondary"
+            [disabled]="busy() || !selectedTemplateId()"
+            (click)="addTemplate()"
+          >
+            Agregar
+          </button>
+        </div>
+      </section>
+    } @else {
+      <p class="text-sm text-slate-600">Crea el Paquete para agregarle Plantillas.</p>
+    }
+  </div>
+}
