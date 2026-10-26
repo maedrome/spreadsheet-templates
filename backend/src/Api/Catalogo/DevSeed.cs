@@ -1,3 +1,5 @@
+using System.IO.Compression;
+using System.Xml.Linq;
 using Api.Common;
 using Api.Data;
 using Microsoft.EntityFrameworkCore;
@@ -6,7 +8,10 @@ using SkiaSharp;
 
 namespace Api.Catalogo;
 
-/// <summary>Catálogo de ejemplo para desarrollo. Idempotente: no hace nada si ya existe.</summary>
+/// <summary>
+/// Catálogo de ejemplo para desarrollo. Idempotente: si el catálogo ya existe no lo toca,
+/// pero igual vuelve a crear los .xlsx de ejemplo que falten en disco.
+/// </summary>
 public static class DevSeed
 {
     private record SeedTemplate(string Slug, string Name, string Description, int PriceCents, SKColor Accent, string[] Headers);
@@ -32,6 +37,8 @@ public static class DevSeed
         var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
         var storage = scope.ServiceProvider.GetRequiredService<IOptions<StorageOptions>>().Value;
 
+        EnsureSampleXlsxFiles(storage);
+
         if (await db.Bundles.AnyAsync(b => b.Slug == BundleSlug, ct)
             || await db.Templates.AnyAsync(t => Templates.Select(s => s.Slug).Contains(t.Slug), ct))
             return;
@@ -48,7 +55,7 @@ public static class DevSeed
                 Description = seed.Description,
                 PriceCents = seed.PriceCents,
                 Position = i,
-                XlsxPath = $"{seed.Slug}.xlsx",
+                XlsxPath = XlsxFileName(seed),
                 GoogleSheetsCopyUrl = $"https://docs.google.com/spreadsheets/d/{seed.Slug}/copy",
             };
             for (var p = 0; p < 2; p++)
@@ -79,6 +86,79 @@ public static class DevSeed
         db.Templates.AddRange(templates);
         db.Bundles.Add(bundle);
         await db.SaveChangesAsync(ct);
+    }
+
+    private static string XlsxFileName(SeedTemplate seed) => $"{seed.Slug}.xlsx";
+
+    private static void EnsureSampleXlsxFiles(StorageOptions storage)
+    {
+        Directory.CreateDirectory(storage.TemplatesPath);
+        foreach (var seed in Templates)
+        {
+            var path = Path.Combine(storage.TemplatesPath, XlsxFileName(seed));
+            if (!File.Exists(path))
+                File.WriteAllBytes(path, BuildXlsx(seed));
+        }
+    }
+
+    /// <summary>Un .xlsx mínimo pero válido (Open XML): una hoja con los encabezados de la Plantilla y filas de ejemplo.</summary>
+    private static byte[] BuildXlsx(SeedTemplate seed)
+    {
+        XNamespace main = "http://schemas.openxmlformats.org/spreadsheetml/2006/main";
+        XNamespace officeRel = "http://schemas.openxmlformats.org/officeDocument/2006/relationships";
+        XNamespace packageRel = "http://schemas.openxmlformats.org/package/2006/relationships";
+        XNamespace contentTypes = "http://schemas.openxmlformats.org/package/2006/content-types";
+        const string relType = "http://schemas.openxmlformats.org/officeDocument/2006/relationships/";
+
+        XElement Cell(int column, int row, object value)
+        {
+            var reference = new XAttribute("r", $"{(char)('A' + column)}{row}");
+            return value is string text
+                ? new XElement(main + "c", reference, new XAttribute("t", "inlineStr"), new XElement(main + "is", new XElement(main + "t", text)))
+                : new XElement(main + "c", reference, new XElement(main + "v", value));
+        }
+
+        XElement Relationship(string type, string target) =>
+            new(packageRel + "Relationships",
+                new XElement(packageRel + "Relationship",
+                    new XAttribute("Id", "rId1"), new XAttribute("Type", relType + type), new XAttribute("Target", target)));
+
+        XElement ContentType(string kind, string key, string value) =>
+            new(contentTypes + kind, new XAttribute(kind == "Default" ? "Extension" : "PartName", key), new XAttribute("ContentType", value));
+
+        var rows = new List<XElement> { new(main + "row", new XAttribute("r", 1), seed.Headers.Select((h, c) => Cell(c, 1, h))) };
+        for (var r = 2; r <= 10; r++)
+        {
+            var row = r;
+            rows.Add(new XElement(main + "row", new XAttribute("r", row),
+                seed.Headers.Select((_, c) => Cell(c, row, c == 0 ? $"Concepto {row - 1}" : (row * 37 + c * 91) % 900 + 100))));
+        }
+
+        var parts = new (string Name, XElement Xml)[]
+        {
+            ("[Content_Types].xml", new XElement(contentTypes + "Types",
+                ContentType("Default", "rels", "application/vnd.openxmlformats-package.relationships+xml"),
+                ContentType("Default", "xml", "application/xml"),
+                ContentType("Override", "/xl/workbook.xml", "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet.main+xml"),
+                ContentType("Override", "/xl/worksheets/sheet1.xml", "application/vnd.openxmlformats-officedocument.spreadsheetml.worksheet+xml"))),
+            ("_rels/.rels", Relationship("officeDocument", "xl/workbook.xml")),
+            ("xl/workbook.xml", new XElement(main + "workbook", new XAttribute(XNamespace.Xmlns + "r", officeRel),
+                new XElement(main + "sheets",
+                    new XElement(main + "sheet", new XAttribute("name", "Plantilla"), new XAttribute("sheetId", 1), new XAttribute(officeRel + "id", "rId1"))))),
+            ("xl/_rels/workbook.xml.rels", Relationship("worksheet", "worksheets/sheet1.xml")),
+            ("xl/worksheets/sheet1.xml", new XElement(main + "worksheet", new XElement(main + "sheetData", rows))),
+        };
+
+        using var stream = new MemoryStream();
+        using (var zip = new ZipArchive(stream, ZipArchiveMode.Create, leaveOpen: true))
+        {
+            foreach (var (name, xml) in parts)
+            {
+                using var entry = zip.CreateEntry(name).Open();
+                new XDocument(new XDeclaration("1.0", "UTF-8", "yes"), xml).Save(entry);
+            }
+        }
+        return stream.ToArray();
     }
 
     /// <summary>Dibuja una hoja de cálculo ficticia: encabezado, filas y un gráfico de barras (variante 0) o un gráfico circular (variante 1).</summary>
