@@ -1,3 +1,20 @@
 /* You can add global styles to this file, and also import other style files */
 
 @import 'tailwindcss';
+
+/* Paleta sobria: neutros y un acento verde. El diseño visual se itera en la fase 8. */
+@theme {
+  --color-surface: #ffffff;
+  --color-sunken: #f5f5f4;
+  --color-line: #e7e5e4;
+  --color-ink: #1c1917;
+  --color-ink-muted: #57534e;
+  --color-accent: #15803d;
+  --color-accent-strong: #166534;
+  --color-accent-soft: #dcfce7;
+}
+
+body {
+  background-color: var(--color-surface);
+  color: var(--color-ink);
+}
