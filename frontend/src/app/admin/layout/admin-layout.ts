@@ -9,31 +9,34 @@ import { ui } from '../shared/ui';
 @Component({
   selector: 'app-admin-layout',
   imports: [RouterOutlet, RouterLink, RouterLinkActive],
-  host: { class: 'block min-h-screen bg-slate-50 text-slate-900' },
+  host: { class: 'block min-h-screen bg-canvas text-ink' },
   template: `
-    <header class="border-b border-slate-200 bg-white">
+    <header class="border-b border-line bg-surface">
       <div class="mx-auto flex max-w-6xl flex-wrap items-center gap-x-6 gap-y-2 px-4 py-3">
-        <span class="font-semibold">Panel de administración</span>
+        <span class="flex items-center gap-2 font-display font-bold">
+          <span aria-hidden="true" class="size-4 rounded-chip bg-accent"></span>
+          Panel de administración
+        </span>
         @if (session.status() === 'authenticated') {
           <nav aria-label="Secciones del panel" class="flex gap-1">
             @for (link of links; track link.path) {
               <a
                 [routerLink]="link.path"
-                routerLinkActive="bg-slate-900 text-white"
+                routerLinkActive="font-semibold"
                 ariaCurrentWhenActive="page"
-                class="rounded px-3 py-1.5 text-sm font-medium text-slate-700 hover:bg-slate-100 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-slate-900"
+                class="rounded-cell px-3 py-1.5 text-sm font-medium text-ink-muted not-aria-[current=page]:hover:bg-canvas aria-[current=page]:bg-night aria-[current=page]:text-night-ink focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
                 >{{ link.label }}</a
               >
             }
           </nav>
           <div class="ml-auto flex items-center gap-3 text-sm">
-            <span class="text-slate-600">{{ session.email() }}</span>
+            <span class="text-ink-subtle">{{ session.email() }}</span>
             <button type="button" [class]="ui.secondary" (click)="logout()">Cerrar sesión</button>
           </div>
         }
       </div>
       @if (error()) {
-        <p role="alert" class="mx-auto max-w-6xl px-4 pb-3 text-sm text-red-700">{{ error() }}</p>
+        <p role="alert" class="mx-auto max-w-6xl px-4 pb-3 text-sm text-danger">{{ error() }}</p>
       }
     </header>
     <main class="mx-auto max-w-6xl px-4 py-8">

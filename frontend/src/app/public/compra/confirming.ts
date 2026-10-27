@@ -24,27 +24,27 @@ type State = 'confirming' | 'check-email' | 'slow' | 'invalid';
             class="mx-auto mb-6 size-10 animate-spin rounded-full border-4 border-line border-t-accent motion-reduce:animate-none"
             aria-hidden="true"
           ></div>
-          <h1 class="text-2xl font-bold text-ink">Confirmando tu pago...</h1>
+          <h1 class="text-3xl font-extrabold text-ink">Confirmando tu pago...</h1>
           <p class="mt-3 text-ink-muted">
             Esto suele tardar unos segundos. No cierres esta página.
           </p>
         }
         @case ('check-email') {
-          <h1 class="text-2xl font-bold text-ink">¡Tu pago está confirmado!</h1>
+          <h1 class="text-3xl font-extrabold text-ink">¡Tu pago está confirmado!</h1>
           <p class="mt-3 text-ink-muted">
             Te enviamos por email el enlace para descargar tus plantillas. Revisa tu bandeja de
             entrada y la carpeta de spam.
           </p>
         }
         @case ('slow') {
-          <h1 class="text-2xl font-bold text-ink">Tu pago está tardando en confirmarse</h1>
+          <h1 class="text-3xl font-extrabold text-ink">Tu pago está tardando en confirmarse</h1>
           <p class="mt-3 text-ink-muted">
             No te preocupes: apenas se confirme, te enviaremos por email el enlace para descargar
             tus plantillas. Revisa tu bandeja de entrada y la carpeta de spam en unos minutos.
           </p>
         }
         @case ('invalid') {
-          <h1 class="text-2xl font-bold text-ink">No encontramos tu pago</h1>
+          <h1 class="text-3xl font-extrabold text-ink">No encontramos tu pago</h1>
           <p class="mt-3 text-ink-muted">
             El enlace de confirmación no es válido. Si pagaste, te llegará un email con el enlace
             para descargar tus plantillas.

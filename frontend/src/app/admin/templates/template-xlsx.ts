@@ -11,7 +11,7 @@ const MAX_BYTES = 20 * 1024 * 1024;
   template: `
     <section [class]="ui.card" aria-labelledby="xlsx-title">
       <h2 id="xlsx-title" class="mb-1 text-lg font-semibold">Archivo Excel</h2>
-      <p class="mb-4 text-sm" [class]="template().hasXlsx ? 'text-green-800' : 'text-slate-600'">
+      <p class="mb-4 text-sm" [class]="template().hasXlsx ? 'text-accent-ink' : 'text-ink-subtle'">
         {{
           template().hasXlsx
             ? 'Ya hay un .xlsx cargado. Subir otro lo reemplaza.'

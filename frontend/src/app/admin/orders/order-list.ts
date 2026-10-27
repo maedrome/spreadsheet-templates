@@ -11,17 +11,17 @@ import { ui } from '../shared/ui';
   template: `
     <h1 class="mb-6 text-2xl font-semibold">Compras</h1>
 
-    <p role="status" class="mb-4 min-h-6 text-sm" [class.text-red-700]="notice()?.error">
+    <p role="status" class="mb-4 min-h-6 text-sm" [class.text-danger]="notice()?.error">
       {{ notice()?.text }}
     </p>
 
     @if (orders.error(); as error) {
-      <p role="alert" class="text-red-700">{{ message(error) }}</p>
+      <p role="alert" class="text-danger">{{ message(error) }}</p>
     } @else if (orders.hasValue()) {
       @if (orders.value().length === 0) {
-        <p class="text-slate-600">Todavía no hay Compras.</p>
+        <p class="text-ink-subtle">Todavía no hay Compras.</p>
       } @else {
-        <div class="overflow-x-auto rounded-lg border border-slate-200 bg-white shadow-sm">
+        <div class="overflow-x-auto rounded-cell border border-line bg-surface">
           <table [class]="ui.table">
             <caption class="sr-only">
               Compras, de la más reciente a la más antigua
@@ -43,7 +43,7 @@ import { ui } from '../shared/ui';
                   <td>{{ order.email }}</td>
                   <td>
                     {{ order.productName }}
-                    <span class="block text-xs text-slate-600">{{
+                    <span class="block text-xs text-ink-subtle">{{
                       order.productType === 'plantilla' ? 'Plantilla' : 'Paquete'
                     }}</span>
                   </td>
@@ -73,7 +73,7 @@ import { ui } from '../shared/ui';
         </div>
       }
     } @else {
-      <p class="text-slate-600">Cargando…</p>
+      <p class="text-ink-subtle">Cargando…</p>
     }
   `,
 })

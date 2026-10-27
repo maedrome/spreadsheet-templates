@@ -8,7 +8,7 @@ import { ProductType } from '../compra/compra.models';
   template: `
     <button
       type="button"
-      class="w-full rounded-lg bg-accent px-5 py-3 text-lg font-semibold text-white hover:bg-accent-strong focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent disabled:cursor-wait disabled:opacity-75 sm:w-auto"
+      class="btn btn-primary w-full text-lg sm:w-auto sm:min-w-56"
       [disabled]="pending()"
       [attr.aria-busy]="pending()"
       (click)="buy()"
@@ -16,7 +16,7 @@ import { ProductType } from '../compra/compra.models';
       {{ pending() ? 'Abriendo el pago…' : 'Comprar' }}
     </button>
     @if (failed()) {
-      <p role="alert" class="mt-2 text-sm text-red-700">
+      <p role="alert" class="mt-2 text-sm text-danger">
         No pudimos abrir el pago. Inténtalo de nuevo en unos minutos.
       </p>
     } @else {

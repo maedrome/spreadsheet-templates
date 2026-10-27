@@ -1,20 +1,141 @@
-/* You can add global styles to this file, and also import other style files */
-
 @import 'tailwindcss';
 
-/* Paleta sobria: neutros y un acento verde. El diseño visual se itera en la fase 8. */
+/*
+ * Dirección visual «Celda» (fase 8): el lenguaje de la hoja de cálculo como marca.
+ * Grilla de líneas finas, verde de planilla, títulos en Bricolage Grotesque y cifras en monoespaciada.
+ * La paleta por defecto de Tailwind se anula para que solo se usen estos tokens.
+ */
 @theme {
+  --color-*: initial;
+  --color-transparent: transparent;
+  --color-current: currentColor;
+
+  /* Fondos */
+  --color-canvas: #f3f5f4;
   --color-surface: #ffffff;
-  --color-sunken: #f5f5f4;
-  --color-line: #e7e5e4;
-  --color-ink: #1c1917;
-  --color-ink-muted: #57534e;
-  --color-accent: #15803d;
-  --color-accent-strong: #166534;
-  --color-accent-soft: #dcfce7;
+  --color-sunken: #e9eeeb;
+
+  /* Líneas de la grilla: `line` decora, `line-strong` delimita controles (3:1 sobre blanco). */
+  --color-line: #d3dbd6;
+  --color-line-strong: #7c8a82;
+
+  /* Texto */
+  --color-ink: #0e1a13;
+  --color-ink-muted: #4a5850;
+  --color-ink-subtle: #5f6e65;
+
+  /* Verde de planilla */
+  --color-accent: #167a3f;
+  --color-accent-strong: #0f5e2f;
+  --color-accent-soft: #ddf3e5;
+  --color-accent-ink: #145c33;
+  --color-on-accent: #ffffff;
+
+  /* Barra oscura (header) */
+  --color-night: #0e1a13;
+  --color-night-ink: #f3f5f4;
+  --color-night-muted: #c9d4cd;
+  --color-mint: #7ce0a3;
+
+  /* Estados */
+  --color-danger: #b42318;
+  --color-danger-soft: #fef3f2;
+  --color-danger-line: #f1aca5;
+
+  --font-sans: 'Instrument Sans', ui-sans-serif, system-ui, sans-serif;
+  --font-display: 'Bricolage Grotesque', 'Instrument Sans', ui-sans-serif, system-ui, sans-serif;
+  --font-mono: 'JetBrains Mono', ui-monospace, 'SFMono-Regular', Menlo, monospace;
+
+  /* Esquinas de celda: casi rectas. */
+  --radius-chip: 2px;
+  --radius-cell: 4px;
+  --radius-sheet: 6px;
+
+  /* Sin sombras de reposo; solo un relieve al pasar el cursor. */
+  --shadow-lift: 0 1px 0 var(--color-line), 0 10px 24px -16px rgb(14 26 19 / 0.35);
 }
 
-body {
+@layer base {
+  html {
+    -webkit-text-size-adjust: 100%;
+  }
+
+  body {
+    background-color: var(--color-canvas);
+    color: var(--color-ink);
+    font-family: var(--font-sans);
+    -webkit-font-smoothing: antialiased;
+  }
+
+  h1,
+  h2,
+  h3 {
+    font-family: var(--font-display);
+    letter-spacing: -0.02em;
+    text-wrap: balance;
+  }
+
+  p {
+    text-wrap: pretty;
+  }
+
+  :focus-visible {
+    outline: 2px solid var(--color-accent);
+    outline-offset: 2px;
+  }
+
+  ::selection {
+    background-color: var(--color-accent-soft);
+    color: var(--color-accent-ink);
+  }
+}
+
+/* Botones de la tienda. */
+@utility btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  border-radius: var(--radius-cell);
+  padding: 0.75rem 1.25rem;
+  font-weight: 600;
+  line-height: 1.25;
+  text-align: center;
+  transition:
+    background-color 120ms,
+    color 120ms,
+    border-color 120ms;
+
+  &:disabled {
+    cursor: wait;
+    opacity: 0.75;
+  }
+}
+
+@utility btn-primary {
+  background-color: var(--color-accent);
+  color: var(--color-on-accent);
+
+  &:hover:not(:disabled) {
+    background-color: var(--color-accent-strong);
+  }
+}
+
+@utility btn-secondary {
+  border: 1px solid var(--color-line-strong);
   background-color: var(--color-surface);
   color: var(--color-ink);
+
+  &:hover {
+    border-color: var(--color-accent);
+    color: var(--color-accent-ink);
+  }
+}
+
+/* Fondo de celdas de hoja de cálculo. */
+@utility bg-grid {
+  background-image:
+    linear-gradient(to right, var(--color-line) 1px, transparent 1px),
+    linear-gradient(to bottom, var(--color-line) 1px, transparent 1px);
+  background-size: 96px 32px;
 }
