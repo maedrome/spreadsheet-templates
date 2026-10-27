@@ -25,6 +25,10 @@
               }
             ],
             "styles": [
+              "@fontsource-variable/bricolage-grotesque/opsz.css",
+              "@fontsource-variable/instrument-sans/wght.css",
+              "@fontsource/jetbrains-mono/500.css",
+              "@fontsource/jetbrains-mono/700.css",
               "src/styles.css"
             ]
           },

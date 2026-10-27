@@ -42,8 +42,9 @@
   --color-danger-soft: #fef3f2;
   --color-danger-line: #f1aca5;
 
-  --font-sans: 'Instrument Sans', ui-sans-serif, system-ui, sans-serif;
-  --font-display: 'Bricolage Grotesque', 'Instrument Sans', ui-sans-serif, system-ui, sans-serif;
+  /* Fuentes servidas desde el propio sitio (paquetes @fontsource en angular.json), sin pedir nada a Google. */
+  --font-sans: 'Instrument Sans Variable', ui-sans-serif, system-ui, sans-serif;
+  --font-display: 'Bricolage Grotesque Variable', 'Instrument Sans Variable', ui-sans-serif, system-ui, sans-serif;
   --font-mono: 'JetBrains Mono', ui-monospace, 'SFMono-Regular', Menlo, monospace;
 
   /* Esquinas de celda: casi rectas. */
