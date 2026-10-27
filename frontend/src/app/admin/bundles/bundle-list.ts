@@ -15,12 +15,12 @@ import { ui } from '../shared/ui';
     </div>
 
     @if (bundles.error(); as error) {
-      <p role="alert" class="text-red-700">{{ message(error) }}</p>
+      <p role="alert" class="text-danger">{{ message(error) }}</p>
     } @else if (bundles.hasValue()) {
       @if (bundles.value().length === 0) {
-        <p class="text-slate-600">Todavía no hay Paquetes.</p>
+        <p class="text-ink-subtle">Todavía no hay Paquetes.</p>
       } @else {
-        <div class="overflow-x-auto rounded-lg border border-slate-200 bg-white shadow-sm">
+        <div class="overflow-x-auto rounded-cell border border-line bg-surface">
           <table [class]="ui.table">
             <caption class="sr-only">
               Paquetes en el orden en que aparecen en la tienda
@@ -43,11 +43,11 @@ import { ui } from '../shared/ui';
                     <a [class]="ui.link" [routerLink]="['/admin/paquetes', bundle.id]">{{
                       bundle.name
                     }}</a>
-                    <span class="block text-xs text-slate-600">{{ bundle.slug }}</span>
+                    <span class="block text-xs text-ink-subtle">{{ bundle.slug }}</span>
                   </td>
                   <td>{{ bundle.templateCount }}</td>
                   <td>{{ bundle.priceCents | usd }}</td>
-                  <td [class]="bundle.savingsCents > 0 ? '' : 'text-red-700'">
+                  <td [class]="bundle.savingsCents > 0 ? '' : 'text-danger'">
                     {{ bundle.savingsCents | usd }}
                   </td>
                   <td>
@@ -62,7 +62,7 @@ import { ui } from '../shared/ui';
         </div>
       }
     } @else {
-      <p class="text-slate-600">Cargando…</p>
+      <p class="text-ink-subtle">Cargando…</p>
     }
   `,
 })

@@ -40,7 +40,7 @@ import { ui } from '../shared/ui';
           <app-field-errors id="login-password-errors" [field]="form.password" />
         </div>
         @if (error()) {
-          <p role="alert" class="text-sm text-red-700">{{ error() }}</p>
+          <p role="alert" class="text-sm text-danger">{{ error() }}</p>
         }
         <button type="submit" class="w-full" [class]="ui.primary" [disabled]="form().submitting()">
           Entrar

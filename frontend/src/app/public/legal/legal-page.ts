@@ -9,7 +9,7 @@ import { LEGAL_INFO } from './legal-info';
       @if (devMode) {
         <p
           role="note"
-          class="mb-6 rounded-lg border border-line bg-sunken p-3 text-sm text-ink"
+          class="mb-6 rounded-cell border border-line bg-sunken p-3 text-sm text-ink"
           data-testid="draft-note"
         >
           <strong>Borrador (solo visible en desarrollo):</strong> este texto debe revisarse con un
@@ -17,8 +17,10 @@ import { LEGAL_INFO } from './legal-info';
           publicarse.
         </p>
       }
-      <h1 class="text-3xl font-bold tracking-tight text-ink">{{ heading() }}</h1>
-      <p class="mt-2 text-sm text-ink-muted">Última actualización: {{ info.lastUpdated }}</p>
+      <h1 class="text-4xl font-extrabold text-ink">{{ heading() }}</h1>
+      <p class="mt-2 font-mono text-xs text-ink-subtle">
+        Última actualización: {{ info.lastUpdated }}
+      </p>
       <div class="legal-body mt-8 space-y-4 leading-relaxed text-ink-muted">
         <ng-content />
       </div>
@@ -28,6 +30,7 @@ import { LEGAL_INFO } from './legal-info';
     .legal-body ::ng-deep h2 {
       margin-top: 2rem;
       font-size: 1.25rem;
+      font-family: var(--font-display);
       font-weight: 700;
       color: var(--color-ink);
     }
@@ -40,7 +43,7 @@ import { LEGAL_INFO } from './legal-info';
     }
     .legal-body ::ng-deep a {
       text-decoration: underline;
-      color: var(--color-accent);
+      color: var(--color-accent-ink);
       overflow-wrap: anywhere;
     }
     .legal-body ::ng-deep strong {

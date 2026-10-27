@@ -15,12 +15,12 @@ import { ui } from '../shared/ui';
       <h1 class="mb-2 text-xl font-semibold">Configura la verificación en dos pasos</h1>
 
       @if (recoveryCodes(); as codes) {
-        <p class="mb-4 text-sm text-slate-700">
+        <p class="mb-4 text-sm text-ink-muted">
           Listo. Guarda estos códigos de recuperación en un lugar seguro: son la única forma de
           entrar si pierdes el teléfono, y no se vuelven a mostrar. Cada uno sirve una sola vez.
         </p>
         <ol
-          class="mb-6 grid grid-cols-2 gap-2 rounded bg-slate-100 p-4 font-mono text-sm"
+          class="mb-6 grid grid-cols-2 gap-2 rounded bg-canvas p-4 font-mono text-sm"
           aria-label="Códigos de recuperación"
         >
           @for (code of codes; track code) {
@@ -31,7 +31,7 @@ import { ui } from '../shared/ui';
           Ya los guardé, ir al panel
         </button>
       } @else {
-        <p class="mb-6 text-sm text-slate-600">
+        <p class="mb-6 text-sm text-ink-subtle">
           El panel exige un segundo factor. Escanea el código con una app de autenticación (Google
           Authenticator, 1Password, Authy…) y escribe el código que genera.
         </p>
@@ -44,9 +44,9 @@ import { ui } from '../shared/ui';
             height="240"
             class="mx-auto mb-4 size-60"
           />
-          <p class="mb-6 text-center text-sm text-slate-700">
+          <p class="mb-6 text-center text-sm text-ink-muted">
             ¿No puedes escanearlo? Escribe esta clave:
-            <code class="mt-1 block font-mono text-base break-all text-slate-900">{{
+            <code class="mt-1 block font-mono text-base break-all text-ink">{{
               setup.sharedKey
             }}</code>
           </p>
@@ -71,10 +71,10 @@ import { ui } from '../shared/ui';
             </button>
           </form>
         } @else if (!error()) {
-          <p class="text-sm text-slate-600">Cargando…</p>
+          <p class="text-sm text-ink-subtle">Cargando…</p>
         }
         @if (error()) {
-          <p role="alert" class="mt-4 text-sm text-red-700">{{ error() }}</p>
+          <p role="alert" class="mt-4 text-sm text-danger">{{ error() }}</p>
         }
       }
     </div>

@@ -1,9 +1,9 @@
 <p class="mb-2 text-sm"><a routerLink="/admin/plantillas" [class]="ui.link">← Plantillas</a></p>
 
 @if (loadError()) {
-  <p role="alert" class="text-red-700">{{ loadError() }}</p>
+  <p role="alert" class="text-danger">{{ loadError() }}</p>
 } @else if (!isNew() && !template()) {
-  <p class="text-slate-600">Cargando…</p>
+  <p class="text-ink-subtle">Cargando…</p>
 } @else {
   <div class="mb-6 flex flex-wrap items-center gap-3">
     <h1 class="text-2xl font-semibold">{{ template()?.name ?? 'Nueva Plantilla' }}</h1>
@@ -16,10 +16,10 @@
 
   <div aria-live="polite" class="mb-4">
     @if (notice()) {
-      <p class="rounded bg-green-50 px-3 py-2 text-sm text-green-800">{{ notice() }}</p>
+      <p class="rounded bg-accent-soft px-3 py-2 text-sm text-accent-ink">{{ notice() }}</p>
     }
     @if (actionError()) {
-      <p role="alert" class="rounded bg-red-50 px-3 py-2 text-sm text-red-700">
+      <p role="alert" class="rounded bg-danger-soft px-3 py-2 text-sm text-danger">
         {{ actionError() }}
       </p>
     }
@@ -136,7 +136,7 @@
         <section [class]="ui.card" aria-labelledby="publish-title">
           <h2 id="publish-title" class="mb-3 text-lg font-semibold">Publicación</h2>
           @if (saved.isPublished) {
-            <p class="mb-4 text-sm text-slate-700">Visible y comprable en la tienda.</p>
+            <p class="mb-4 text-sm text-ink-muted">Visible y comprable en la tienda.</p>
             <button
               type="button"
               [class]="ui.secondary"
@@ -147,17 +147,17 @@
             </button>
           } @else {
             @if (saved.missingForPublication.length > 0) {
-              <p class="mb-2 text-sm text-slate-700">Para publicarla falta:</p>
-              <ul class="mb-4 list-disc pl-5 text-sm text-slate-700">
+              <p class="mb-2 text-sm text-ink-muted">Para publicarla falta:</p>
+              <ul class="mb-4 list-disc pl-5 text-sm text-ink-muted">
                 @for (missing of saved.missingForPublication; track missing) {
                   <li>{{ missing }}</li>
                 }
               </ul>
             } @else {
-              <p class="mb-4 text-sm text-slate-700">Tiene todo lo necesario para publicarse.</p>
+              <p class="mb-4 text-sm text-ink-muted">Tiene todo lo necesario para publicarse.</p>
             }
             @if (form().dirty()) {
-              <p class="mb-2 text-sm text-slate-700">Guarda los cambios antes de publicar.</p>
+              <p class="mb-2 text-sm text-ink-muted">Guarda los cambios antes de publicar.</p>
             }
             <button
               type="button"
@@ -179,7 +179,7 @@
                   <a [class]="ui.link" [routerLink]="['/admin/paquetes', bundle.id]">{{
                     bundle.name
                   }}</a>
-                  <span class="text-slate-600">{{ bundle.isPublished ? '(publicado)' : '' }}</span>
+                  <span class="text-ink-subtle">{{ bundle.isPublished ? '(publicado)' : '' }}</span>
                 </li>
               }
             </ul>
@@ -189,7 +189,7 @@
         @if (!saved.isPublished) {
           <section [class]="ui.card" aria-labelledby="delete-title">
             <h2 id="delete-title" class="mb-3 text-lg font-semibold">Borrar</h2>
-            <p class="mb-4 text-sm text-slate-700">Solo se puede borrar si no tiene Compras.</p>
+            <p class="mb-4 text-sm text-ink-muted">Solo se puede borrar si no tiene Compras.</p>
             <button type="button" [class]="ui.danger" [disabled]="busy()" (click)="remove()">
               Borrar Plantilla
             </button>
@@ -202,7 +202,7 @@
         <app-template-xlsx [template]="saved" (changed)="onFilesChanged($event)" />
       </div>
     } @else {
-      <p class="text-sm text-slate-600">
+      <p class="text-sm text-ink-subtle">
         Crea la Plantilla para subir sus Previews y el archivo .xlsx.
       </p>
     }

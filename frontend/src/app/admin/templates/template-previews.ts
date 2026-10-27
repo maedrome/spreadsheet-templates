@@ -23,19 +23,19 @@ const MAX_BYTES = 10 * 1024 * 1024;
             track preview.id;
             let index = $index, first = $first, last = $last
           ) {
-            <li class="rounded border border-slate-200 p-2">
+            <li class="rounded border border-line p-2">
               <img
                 [src]="thumbnail(preview)"
                 [alt]="'Preview ' + (index + 1) + ' de ' + template().name"
                 width="480"
                 [attr.height]="thumbnailHeight(preview)"
-                class="mb-2 aspect-[16/10] w-full rounded bg-slate-100 object-cover"
+                class="mb-2 aspect-[16/10] w-full rounded bg-canvas object-cover"
               />
               <div class="flex flex-wrap items-center gap-2">
                 @if (first) {
                   <span [class]="ui.published">Principal</span>
                 }
-                <span class="mr-auto text-sm text-slate-600">{{ index + 1 }}</span>
+                <span class="mr-auto text-sm text-ink-subtle">{{ index + 1 }}</span>
                 <button
                   type="button"
                   class="px-2 py-1"
@@ -71,7 +71,7 @@ const MAX_BYTES = 10 * 1024 * 1024;
           }
         </ol>
       } @else {
-        <p class="mb-4 text-sm text-slate-600">Todavía no hay Previews.</p>
+        <p class="mb-4 text-sm text-ink-subtle">Todavía no hay Previews.</p>
       }
 
       <label [class]="ui.label" for="preview-file">Agregar Preview</label>

@@ -15,12 +15,12 @@ import { ui } from '../shared/ui';
     </div>
 
     @if (templates.error(); as error) {
-      <p role="alert" class="text-red-700">{{ message(error) }}</p>
+      <p role="alert" class="text-danger">{{ message(error) }}</p>
     } @else if (templates.hasValue()) {
       @if (templates.value().length === 0) {
-        <p class="text-slate-600">Todavía no hay Plantillas.</p>
+        <p class="text-ink-subtle">Todavía no hay Plantillas.</p>
       } @else {
-        <div class="overflow-x-auto rounded-lg border border-slate-200 bg-white shadow-sm">
+        <div class="overflow-x-auto rounded-cell border border-line bg-surface">
           <table [class]="ui.table">
             <caption class="sr-only">
               Plantillas en el orden en que aparecen en la tienda
@@ -54,7 +54,7 @@ import { ui } from '../shared/ui';
                     <a [class]="ui.link" [routerLink]="['/admin/plantillas', template.id]">{{
                       template.name
                     }}</a>
-                    <span class="block text-xs text-slate-600">{{ template.slug }}</span>
+                    <span class="block text-xs text-ink-subtle">{{ template.slug }}</span>
                   </td>
                   <td>{{ template.priceCents | usd }}</td>
                   <td>
@@ -62,7 +62,7 @@ import { ui } from '../shared/ui';
                       {{ template.isPublished ? 'Publicada' : 'Sin publicar' }}
                     </span>
                   </td>
-                  <td class="text-slate-700">
+                  <td class="text-ink-muted">
                     {{ template.previewCount }}
                     {{ template.previewCount === 1 ? 'Preview' : 'Previews' }} ·
                     {{ template.hasXlsx ? '.xlsx' : 'sin .xlsx' }} ·
@@ -75,7 +75,7 @@ import { ui } from '../shared/ui';
         </div>
       }
     } @else {
-      <p class="text-slate-600">Cargando…</p>
+      <p class="text-ink-subtle">Cargando…</p>
     }
   `,
 })

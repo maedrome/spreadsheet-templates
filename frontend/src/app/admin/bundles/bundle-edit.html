@@ -1,9 +1,9 @@
 <p class="mb-2 text-sm"><a routerLink="/admin/paquetes" [class]="ui.link">← Paquetes</a></p>
 
 @if (loadError()) {
-  <p role="alert" class="text-red-700">{{ loadError() }}</p>
+  <p role="alert" class="text-danger">{{ loadError() }}</p>
 } @else if (!isNew() && !bundle()) {
-  <p class="text-slate-600">Cargando…</p>
+  <p class="text-ink-subtle">Cargando…</p>
 } @else {
   <div class="mb-6 flex flex-wrap items-center gap-3">
     <h1 class="text-2xl font-semibold">{{ bundle()?.name ?? 'Nuevo Paquete' }}</h1>
@@ -16,10 +16,10 @@
 
   <div aria-live="polite" class="mb-4">
     @if (notice()) {
-      <p class="rounded bg-green-50 px-3 py-2 text-sm text-green-800">{{ notice() }}</p>
+      <p class="rounded bg-accent-soft px-3 py-2 text-sm text-accent-ink">{{ notice() }}</p>
     }
     @if (actionError()) {
-      <p role="alert" class="rounded bg-red-50 px-3 py-2 text-sm text-red-700">
+      <p role="alert" class="rounded bg-danger-soft px-3 py-2 text-sm text-danger">
         {{ actionError() }}
       </p>
     }
@@ -118,18 +118,18 @@
           <h2 id="savings-title" class="mb-3 text-lg font-semibold">Ahorro</h2>
           <dl class="space-y-1 text-sm">
             <div class="flex justify-between gap-4">
-              <dt class="text-slate-700">Suma de las Plantillas</dt>
+              <dt class="text-ink-muted">Suma de las Plantillas</dt>
               <dd>{{ templatesTotalCents() | usd }}</dd>
             </div>
             <div class="flex justify-between gap-4">
-              <dt class="text-slate-700">Precio del Paquete</dt>
+              <dt class="text-ink-muted">Precio del Paquete</dt>
               <dd>{{ priceCents() | usd }}</dd>
             </div>
-            <div class="flex justify-between gap-4 border-t border-slate-200 pt-1 font-semibold">
+            <div class="flex justify-between gap-4 border-t border-line pt-1 font-semibold">
               <dt>Ahorro</dt>
               <dd
                 data-testid="savings"
-                [class]="savingsCents() > 0 ? 'text-green-800' : 'text-red-700'"
+                [class]="savingsCents() > 0 ? 'text-accent-ink' : 'text-danger'"
               >
                 {{ savingsCents() | usd }}
                 @if (savingsCents() > 0) {
@@ -139,7 +139,7 @@
             </div>
           </dl>
           @if (savingsCents() <= 0) {
-            <p class="mt-3 text-sm text-red-700">
+            <p class="mt-3 text-sm text-danger">
               El precio tiene que ser menor que la suma de las Plantillas.
             </p>
           }
@@ -148,7 +148,7 @@
         <section [class]="ui.card" aria-labelledby="publish-title">
           <h2 id="publish-title" class="mb-3 text-lg font-semibold">Publicación</h2>
           @if (saved.isPublished) {
-            <p class="mb-4 text-sm text-slate-700">Visible y comprable en la tienda.</p>
+            <p class="mb-4 text-sm text-ink-muted">Visible y comprable en la tienda.</p>
             <button
               type="button"
               [class]="ui.secondary"
@@ -159,15 +159,15 @@
             </button>
           } @else {
             @if (saved.publicationProblems.length > 0) {
-              <p class="mb-2 text-sm text-slate-700">Para publicarlo:</p>
-              <ul class="mb-4 list-disc pl-5 text-sm text-slate-700">
+              <p class="mb-2 text-sm text-ink-muted">Para publicarlo:</p>
+              <ul class="mb-4 list-disc pl-5 text-sm text-ink-muted">
                 @for (problem of saved.publicationProblems; track problem) {
                   <li>{{ problem }}</li>
                 }
               </ul>
             }
             @if (form().dirty()) {
-              <p class="mb-2 text-sm text-slate-700">Guarda los cambios antes de publicar.</p>
+              <p class="mb-2 text-sm text-ink-muted">Guarda los cambios antes de publicar.</p>
             }
             <button
               type="button"
@@ -183,7 +183,7 @@
         @if (!saved.isPublished) {
           <section [class]="ui.card" aria-labelledby="delete-title">
             <h2 id="delete-title" class="mb-3 text-lg font-semibold">Borrar</h2>
-            <p class="mb-4 text-sm text-slate-700">Solo se puede borrar si no tiene Compras.</p>
+            <p class="mb-4 text-sm text-ink-muted">Solo se puede borrar si no tiene Compras.</p>
             <button type="button" [class]="ui.danger" [disabled]="busy()" (click)="remove()">
               Borrar Paquete
             </button>
@@ -234,7 +234,7 @@
             </tbody>
           </table>
         } @else {
-          <p class="mb-4 text-sm text-slate-600">Todavía no tiene Plantillas.</p>
+          <p class="mb-4 text-sm text-ink-subtle">Todavía no tiene Plantillas.</p>
         }
 
         <div class="flex flex-wrap items-end gap-3">
@@ -266,7 +266,7 @@
         </div>
       </section>
     } @else {
-      <p class="text-sm text-slate-600">Crea el Paquete para agregarle Plantillas.</p>
+      <p class="text-sm text-ink-subtle">Crea el Paquete para agregarle Plantillas.</p>
     }
   </div>
 }

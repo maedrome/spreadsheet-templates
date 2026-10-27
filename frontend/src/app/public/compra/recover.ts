@@ -12,14 +12,17 @@ export const RECOVERY_MESSAGE = 'Si hay compras con ese email, te enviamos los e
   imports: [FormRoot, FormField],
   template: `
     <section class="mx-auto max-w-md px-4 py-12">
-      <h1 class="text-3xl font-bold tracking-tight text-ink">Recuperar mi compra</h1>
+      <h1 class="text-4xl font-extrabold text-ink">Recuperar mi compra</h1>
       <p class="mt-3 text-ink-muted">
         ¿Perdiste el email de tu compra? Escribe el email con el que pagaste y te enviamos un enlace
         nuevo por cada compra. Los enlaces anteriores siguen funcionando.
       </p>
 
       @if (sent()) {
-        <p role="status" class="mt-8 rounded-lg border border-line bg-sunken p-4 text-ink">
+        <p
+          role="status"
+          class="mt-8 rounded-cell border border-accent bg-accent-soft p-4 text-accent-ink"
+        >
           {{ message }}
         </p>
       } @else {
@@ -31,7 +34,7 @@ export const RECOVERY_MESSAGE = 'Si hay compras con ese email, te enviamos los e
               type="email"
               autocomplete="email"
               inputmode="email"
-              class="mt-1 block w-full rounded-lg border border-line bg-surface px-4 py-3 text-ink focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
+              class="mt-1 block w-full rounded-cell border border-line-strong bg-surface px-4 py-3 text-ink aria-invalid:border-danger"
               [formField]="form.email"
               [attr.aria-invalid]="form.email().touched() && form.email().invalid()"
               aria-describedby="recover-email-errors"
@@ -39,17 +42,17 @@ export const RECOVERY_MESSAGE = 'Si hay compras con ese email, te enviamos los e
             <div id="recover-email-errors" aria-live="polite">
               @if (form.email().touched()) {
                 @for (error of form.email().errors(); track $index) {
-                  <p class="mt-1 text-sm text-red-700">{{ error.message }}</p>
+                  <p class="mt-1 text-sm text-danger">{{ error.message }}</p>
                 }
               }
             </div>
           </div>
           @if (failed()) {
-            <p role="alert" class="text-sm text-red-700">{{ failed() }}</p>
+            <p role="alert" class="text-sm text-danger">{{ failed() }}</p>
           }
           <button
             type="submit"
-            class="w-full rounded-lg bg-accent px-5 py-3 text-lg font-semibold text-white hover:bg-accent-strong focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent disabled:cursor-wait disabled:opacity-75"
+            class="btn btn-primary w-full text-lg"
             [disabled]="form().submitting()"
           >
             {{ form().submitting() ? 'Enviando…' : 'Enviarme los enlaces' }}

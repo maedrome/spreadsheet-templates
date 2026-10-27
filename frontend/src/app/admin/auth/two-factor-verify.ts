@@ -13,7 +13,7 @@ import { ui } from '../shared/ui';
   template: `
     <div class="mx-auto max-w-sm" [class]="ui.card">
       <h1 class="mb-2 text-xl font-semibold">Verificación en dos pasos</h1>
-      <p class="mb-6 text-sm text-slate-600">
+      <p class="mb-6 text-sm text-ink-subtle">
         @if (useRecoveryCode()) {
           Escribe uno de tus códigos de recuperación. Cada código sirve una sola vez.
         } @else {
@@ -43,7 +43,7 @@ import { ui } from '../shared/ui';
           Usar un código de recuperación
         </label>
         @if (error()) {
-          <p role="alert" class="text-sm text-red-700">{{ error() }}</p>
+          <p role="alert" class="text-sm text-danger">{{ error() }}</p>
         }
         <button type="submit" class="w-full" [class]="ui.primary" [disabled]="form().submitting()">
           Verificar
