@@ -3,6 +3,8 @@ import { TestBed } from '@angular/core/testing';
 import { Meta, Title } from '@angular/platform-browser';
 import { provideRouter } from '@angular/router';
 import { Faq } from '../faq';
+import { PublicLayout } from '../layout';
+import { STORE_NAME } from '../store';
 import { LEGAL_INFO } from './legal-info';
 import { PrivacyPage } from './privacy';
 import { TermsPage } from './terms';
@@ -39,6 +41,21 @@ describe('páginas legales', () => {
     for (const name of ['Polar.sh', 'Resend', 'Hetzner', 'Umami']) expect(text).toContain(name);
     expect(html.querySelector(`a[href="mailto:${LEGAL_INFO.contactEmail}"]`)).toBeTruthy();
     expect(TestBed.inject(Title).getTitle()).toContain('privacidad');
+  });
+
+  it('el nombre de la tienda sale de una sola fuente en el layout, los títulos y las páginas legales', () => {
+    TestBed.configureTestingModule({ providers: [provideRouter([])] });
+    expect(TestBed.inject(STORE_NAME)).toBe(LEGAL_INFO.storeName);
+
+    const layout = TestBed.createComponent(PublicLayout);
+    layout.detectChanges();
+    const layoutText = (layout.nativeElement as HTMLElement).textContent ?? '';
+    expect(layoutText).toContain(LEGAL_INFO.storeName);
+
+    const terms = TestBed.createComponent(TermsPage);
+    terms.detectChanges();
+    expect((terms.nativeElement as HTMLElement).textContent).toContain(LEGAL_INFO.storeName);
+    expect(TestBed.inject(Title).getTitle()).toContain(LEGAL_INFO.storeName);
   });
 
   it('muestra el aviso de borrador en desarrollo', () => {
