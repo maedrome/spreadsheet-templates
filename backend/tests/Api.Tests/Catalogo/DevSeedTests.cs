@@ -6,6 +6,7 @@ using Api.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
+using SkiaSharp;
 
 namespace Api.Tests.Catalogo;
 
@@ -39,6 +40,32 @@ public class DevSeedTests(ApiFactory factory) : IClassFixture<ApiFactory>
 
         Assert.True(File.Exists(missing));
         Assert.Equal(3, await QueryAsync(db => db.Templates.CountAsync()));
+    }
+
+    [Fact]
+    public async Task Seed_writes_every_preview_variant_at_its_declared_size_and_restores_missing_ones()
+    {
+        factory.CreateClient();
+        await DevSeed.RunAsync(factory.Services);
+
+        var previewsPath = factory.Services.GetRequiredService<IOptions<StorageOptions>>().Value.PreviewsPath;
+        var variants = await QueryAsync(db => db.Templates.AsNoTracking().SelectMany(t => t.Previews).SelectMany(p => p.Variants).ToListAsync());
+        Assert.Equal(3 * 2 * PreviewVariant.StandardWidths.Length, variants.Count);
+
+        foreach (var variant in variants)
+        {
+            var path = Path.Combine(previewsPath, variant.FileName);
+            using var codec = SKCodec.Create(path);
+            Assert.NotNull(codec);
+            Assert.Equal(SKEncodedImageFormat.Webp, codec.EncodedFormat);
+            Assert.Equal((variant.Width, variant.Height), (codec.Info.Width, codec.Info.Height));
+        }
+
+        var missing = Path.Combine(previewsPath, variants[0].FileName);
+        File.Delete(missing);
+        await DevSeed.RunAsync(factory.Services);
+
+        Assert.True(File.Exists(missing));
     }
 
     private static void AssertIsWorkbookWithHeaders(string path)
